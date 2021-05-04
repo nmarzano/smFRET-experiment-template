@@ -1,8 +1,11 @@
-# log files
-*.log
+Experiment_1-description/python_results/*
+Experiment_1-description/raw_data/*
 
-# Annoying Office temp files
-*~$*
+Experiment_2-description/python_results/*
+Experiment_2-description/raw_data/*
 
-# VSCode files
-*.vscode
+Experiment_3-description/python_results/*
+Experiment_3-description/raw_data/*
+
+Experiment_4-description/python_results/*
+Experiment_4-description/raw_data/*
