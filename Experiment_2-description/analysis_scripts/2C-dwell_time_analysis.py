@@ -9,8 +9,7 @@ import glob
 
 filename = 'Experiment_X-description/python_results/TDP_cleaned.csv'
 output_folder = 'Experiment_X-description/python_results'
-if not os.path.exists(output_folder):
-    os.makedirs(output_folder)
+
 
 FRET_thresh = 0.5 #### FRET value at which to filter data above or below
 fps = 5  ### frames per second
@@ -25,15 +24,19 @@ TDP_data = pd.read_csv(filename, header = "infer")
 ####################################  Loop will go through each molecule in df (i.e. dataframe "A") and will subset all indexes except for the first one
 ####################################  (i.e iloc[1:]) and then append that data (now without the first dwell time) into the list made at the beginning. 
 ####################################  Data is then concatenated into a dataframe called filtered (overwrites the list)
-def cleanup_dwell(data):
-    filtered = []
-    for molecule, df in data.groupby("Molecule"):
-        filtered.append(df.iloc[1:])
-    filtered = pd.concat(filtered)  #####filtered = pd.concat([df.iloc[1:] for molecule, df in A.groupby("Molecule")]) ##code here is the same as the for loop but in a list comprehension format
-    filtered["Time (s)"] = filtered["Time"]/fps
-    filtered = filtered[filtered["Time (s)"] >= thresh]
-    return filtered
-
+def cleanup_dwell(data, first_dwell = "delete"):
+    if first_dwell == "delete":
+        filtered = []
+        for molecule, df in data.groupby("Molecule"):
+            filtered.append(df.iloc[1:])
+        filtered = pd.concat(filtered)  #####filtered = pd.concat([df.iloc[1:] for molecule, df in A.groupby("Molecule")]) ##code here is the same as the for loop but in a list comprehension format
+        filtered["Time (s)"] = filtered["Time"]/fps
+        filtered = filtered[filtered["Time (s)"] >= thresh]
+        return filtered
+    if first_dwell == "keep":
+        data["Time (s)"] = data["Time"]/fps
+        data = data[data["Time (s)"] >= thresh]
+        return data
 
 ################################### Code to start filtering FRET before and after values and extract the dwell times and then concatenate each result into
 ################################### a new data frame, df_col
@@ -67,7 +70,7 @@ def calculate_mean(filtered_data, treatment_name):
 
 for treatment_name, df in TDP_data.groupby("treatment_name"):
     initial_data = df[df["treatment_name"] == treatment_name]
-    cleaned_data = cleanup_dwell(initial_data)
+    cleaned_data = cleanup_dwell(initial_data) ##### to keep the first dwell state, simply change code to "cleanup_dwell(initial_data, "keep")
     filtered_data = filter_dwell(cleaned_data)
     filtered_data.to_csv(f"{output_folder}/Dwell_times/Filtered_dwelltime_{treatment_name}.csv", index = False)
     mean_dwell = calculate_mean(filtered_data, treatment_name)
@@ -75,4 +78,3 @@ for treatment_name, df in TDP_data.groupby("treatment_name"):
     dwell_frequency = transition_frequency(filtered_data)
     dwell_frequency["sample"] = treatment_name
     dwell_frequency.to_csv(f"{output_folder}/Dwell_frequency/Filtered_dwellfrequency_{treatment_name}.csv", index = False, header = None)
-
