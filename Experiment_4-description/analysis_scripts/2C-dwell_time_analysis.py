@@ -12,7 +12,7 @@ output_folder = 'Experiment_X-description/python_results'
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
-FRET_thresh = 0.5 #### FRET value at which to filter data above or below
+FRET_thresh = 0.5 #### FRET value at which to filter data above or below. IF CHANGED, WILL NEED TO CHANGE ALL 0.5 VALUES (E.G. BELOW IN HEADERS) TO THE NEW VALUE
 fps = 5  ### frames per second
 thresh = 2 ### should be 10x expsoure if using NL515 smoothing on MASH FRET
 headers = ["< 0.5 to < 0.5", "< 0.5 to > 0.5", "> 0.5 to > 0.5", "> 0.5 to < 0.5"]
