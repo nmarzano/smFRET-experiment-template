@@ -3,16 +3,21 @@
 **Purpose**: 
 
 
-**Cell Type**: 
+**Buffers used**: 
 
 
-**Instrument/techniques**: 
+**Concentration of proteins and stock origin**: 
 
 
-**Data produced:** 
+**Instrument/techniques/imaging settings:** 
+532 laser imaging exposure = X
+532 nm laser = X ND
+
+647 laser imaging exposure = X
+647 nm laser = X ND
 
 
-**Analysis:** 
+**Setup and workflow:** 
 
 
 **References/Resources:** 
