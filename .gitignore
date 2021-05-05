@@ -1,11 +1,3 @@
-Experiment_1-description/python_results/*
-Experiment_1-description/raw_data/*
+**/python_results/*
+**/raw_data/*
 
-Experiment_2-description/python_results/*
-Experiment_2-description/raw_data/*
-
-Experiment_3-description/python_results/*
-Experiment_3-description/raw_data/*
-
-Experiment_4-description/python_results/*
-Experiment_4-description/raw_data/*
