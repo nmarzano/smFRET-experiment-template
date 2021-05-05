@@ -47,7 +47,7 @@ compiled_df = pd.concat(compiled_df)   #### .rename(columns = {1:"test", 3:"test
 compiled_df.columns = ['Molecule', 'FRET before transition', 'FRET after transition', 'Time', "treatment_name"]
 
 
-filtered_data = filter_TDP(A)
+filtered_data = filter_TDP(compiled_df)
 filtered_data.to_csv(f'{output_folder}/TDP_cleaned_filt.csv', index = False)
 ############### Save data to TDP_cleaned
 compiled_df.to_csv(f'{output_folder}/TDP_cleaned.csv', index = False)
