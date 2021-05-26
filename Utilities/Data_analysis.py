@@ -1,7 +1,17 @@
 import pandas as pd
-
+import numpy as np
+import glob as glob
 
 def filter_TDP(data_frame, thresh = 0.3):
+    """[optional function that removes molecules that do not transition below threshold at some point]
+
+    Args:
+        data_frame ([dataframe]): [dataframe that has been cleaned to remove outliers by 'remove_outliers' function]
+        thresh (float, optional): [FRET value to threshold - will filter molecules and keep those that go below the thresh]. Defaults to 0.3.
+
+    Returns:
+        [dataframe]: [contains only molecules of interest]
+    """
     filtered_mol = []
     for treatment, df in data_frame.groupby("treatment_name"):
         mol_list = df[(df["FRET before transition"] <= thresh)|(df["FRET after transition"] <= thresh)].Molecule.unique().tolist()
@@ -10,12 +20,17 @@ def filter_TDP(data_frame, thresh = 0.3):
     filtered_mol = pd.concat(filtered_mol)
     return filtered_mol
 
-
-
-
-
-
 def remove_outliers(compiled, plot_type, data_type = "raw"):
+    """[removes outliers from dataframe]
+
+    Args:
+        compiled ([dataframe]): [raw dataframe containing outliers to be removed]
+        plot_type ([str]): [string can either be 'hist' for histogram data or 'TDP' for TDP data]
+        data_type (str, optional): [removes either raw FRET values or 'idealized' FRET values]. Defaults to "raw".
+
+    Returns:
+        [dataframe]: [returns cleaned data without outliers]
+    """
     if plot_type == 'hist':
         if data_type == "raw":
             rawFRET = compiled[(compiled[3] > -0.5) & (compiled[3] < 1.5)].copy()
@@ -29,3 +44,190 @@ def remove_outliers(compiled, plot_type, data_type = "raw"):
         return compiled
     else:
         print('invalid plot type, please set plot_type as "hist" or "TDP" - you idiot')
+
+def cleanup_dwell(data, fps, thresh, first_dwell = "delete"):
+    """[Will convert the data frome frame number to unit of time (seconds) and then delete all dwell times
+    that are smaller than the set threshold (defined previously) in seconds. Will also delete the first dwell 
+    state from each molecule]
+
+    Args:
+        data ([dataframe]): [raw data]
+        first_dwell (str, optional): [Set to 'keep' to keep the first dwell state from each molecule otherwise 
+        Will delete the first dwell state from each molecule by default]. Defaults to "delete".
+
+    Returns:
+        [dataframe]: [Data is now cleaned and ready for subsequent processing]
+    """
+    if first_dwell == "delete":
+        filtered = []
+        for molecule, df in data.groupby("Molecule"):
+            filtered.append(df.iloc[1:])
+        filtered = pd.concat(filtered)  #####filtered = pd.concat([df.iloc[1:] for molecule, df in A.groupby("Molecule")]) ##code here is the same as the for loop but in a list comprehension format
+        filtered["Time (s)"] = filtered["Time"]/fps
+        filtered = filtered[filtered["Time (s)"] >= thresh]
+        return filtered
+    if first_dwell == "keep":
+        data["Time (s)"] = data["Time"]/fps
+        data = data[data["Time (s)"] >= thresh]
+        return data
+
+def filter_dwell(df, FRET_thresh, headers):
+    """[Will take the cleaned TDP data and will filter it using a threshold (defined by FRET_thresh)
+    into seperate types of transitions (e.g., < 0.5 to > 0.5 FRET if FRET_thresh is = 0.5 is one example
+    of a type of transition).
+
+    Args:
+        df ([dataframe]): [contains cleaned data that has been processed using the 'cleanup_dwell' function]
+
+    Returns:
+        [dataframe]: [contains dwell time that has been categorized into each transition class]
+    """
+    filtered_lowtohigh = df[(df["FRET before transition"] < FRET_thresh) & (df["FRET after transition"] > FRET_thresh)].copy()
+    filtered_lowtolow = df[(df["FRET before transition"] < FRET_thresh) & (df["FRET after transition"] < FRET_thresh)].copy()
+    filtered_hightolow = df[(df["FRET before transition"] > FRET_thresh) & (df["FRET after transition"] < FRET_thresh)].copy()
+    filtered_hightohigh = df[(df["FRET before transition"] > FRET_thresh) & (df["FRET after transition"] > FRET_thresh)].copy()
+    dataf = [filtered_lowtolow["Time (s)"], filtered_lowtohigh["Time (s)"], filtered_hightohigh["Time (s)"], filtered_hightolow["Time (s)"]]
+    df_col = pd.concat(dataf, axis = 1, keys = headers)
+    df_col = df_col.apply(lambda x:pd.Series(x.dropna().values))  ## removes NaN values from each column in df_col
+    return df_col
+
+def transition_frequency(filt):
+    """calculates the transition frequency (i.e., the number of transitions per transition class divided
+    by the total number of transitions observed). For example if there are 40 transitions total, and a 
+    < 0.5 to > 0.5 transition occurs 10 times, then the transition probability for that transition type is 
+    0.25 or 25%.
+
+    Args:
+        filt (dataframe): contains the dataframe with filtered data (cleaned data has been filtered by
+        'filter_dwell' function)
+
+    Returns:
+        dataframe: returns a dataframe containing the percentage for each transition type
+    """
+    count_df_col = pd.DataFrame(filt.count(axis = 0)).transpose()
+    count_df_col["sum"] = count_df_col.sum(axis = 1)
+    dwell_frequency = pd.DataFrame([(count_df_col[column]/count_df_col["sum"])*100 for column in count_df_col]).transpose()
+    print(dwell_frequency)
+    return dwell_frequency
+
+def calculate_mean(filtered_data, treatment_name):
+    """calculates the mean dwell time of each type of transition class
+
+    Args:
+        filtered_data (dataframe): dataframe generated after the 'cleanup_dwell' and 'filter_dwell' functions 
+        have been run
+        treatment_name (str): not required, only present to receive input from for loop. set to treatment_name
+    Returns:
+        [dataframe]: returns dataframe containing the mean of each transition class
+    """
+    mean_dwell = pd.DataFrame([filtered_data.iloc[0:].mean()])
+    mean_dwell["sample"] = treatment_name
+    return mean_dwell
+
+def float_generator(data_frame, treatment, FRET_thresh):
+    """Will generate the float values used to scale the size of the arrows when plotting the summary heatmap    
+
+    Args:
+        data_frame (dataframe): Takes dataframe containing the transition frequencies generated using the 
+    'transition_frequency' function
+        treatment (str): will take 'treatment' from for loop. Leave as treatment.
+
+    Returns:
+        [dataframe]: returns values used to scale arrow - 
+    """
+    transition_frequency_arrow = data_frame[data_frame["sample"]== treatment]
+    normalised_number_lowtohigh = float(np.array(transition_frequency_arrow[f"< {FRET_thresh} to > {FRET_thresh}"])/1000)
+    normalised_number_hightolow = float(np.array(transition_frequency_arrow[f"> {FRET_thresh} to < {FRET_thresh}"])/1000)
+    normalised_number_hightohigh = float(np.array(transition_frequency_arrow[f"> {FRET_thresh} to > {FRET_thresh}"])/1000)
+    normalised_number_lowtolow = float(np.array(transition_frequency_arrow[f"< {FRET_thresh} to < {FRET_thresh}"])/1000)
+    arrow_list = [normalised_number_lowtohigh,normalised_number_hightolow,normalised_number_hightohigh,normalised_number_lowtolow]
+    return arrow_list
+
+def heatmap_prep(histogram_data, treatment, FRET_thresh):
+    """Takes the data and calculates the number of data points total (total), how much data points are below
+    a threshold (time below) and above a threshold (time above) and will use these values to calculate what proportion
+    of time the FRET is below or above thresh. Will then feed into the heatmap when plotting
+
+    Args:
+        histogram_data (dataframe): data used to plot the histogram - will include all the cleaned FRET and
+    idealized FRET values (time not a factor here, just number of frames)
+        treatment (str): only used to be fed from for loop. do not change
+
+    Returns:
+        df: contains the data required to plot the heatmap. will be as a proportion of time spent below or above
+        threshold
+    """
+    subset_data = histogram_data[histogram_data["treatment_name"]==treatment]
+    total = len(subset_data[(subset_data["FRET"] < FRET_thresh) | (subset_data["FRET"] > FRET_thresh)])
+    subset_data_largerthanthresh = len(subset_data[subset_data["FRET"] > FRET_thresh])
+    subset_data_lessthanthresh = len(subset_data[subset_data["FRET"] < FRET_thresh])
+    time_below = (subset_data_lessthanthresh/total)
+    time_above = (subset_data_largerthanthresh/total)
+    thresh_dicts = {f"< {FRET_thresh}":[time_below], f"> {FRET_thresh}":[time_above] }
+    thresh_dfs = pd.DataFrame(thresh_dicts)
+    #thresh_dfs["treatment"] = treatment
+    return thresh_dfs
+
+def mean_dwell_prep(mean_dwell_data, treatment, FRET_thresh):
+    """calculates the mean values for each transition class and converts to float values for plotting in
+    summary heatmap 
+
+    Args:
+        mean_dwell_data (dataframe): dataframe containing mean values
+        treatment (str): used for a for loop. do not change.
+
+    Returns:
+        [list]: contains list of float values
+    """
+    subset_mean_dwell = mean_dwell_data[mean_dwell_data["sample"]== treatment]
+    meandwell_lowtohigh = float(np.array(subset_mean_dwell[f"< {FRET_thresh} to > {FRET_thresh}"]))
+    meandwell_hightolow = float(np.array(subset_mean_dwell[f"> {FRET_thresh} to < {FRET_thresh}"]))
+    meandwell_hightohigh = float(np.array(subset_mean_dwell[f"> {FRET_thresh} to > {FRET_thresh}"]))
+    meandwell_lowtolow = float(np.array(subset_mean_dwell[f"< {FRET_thresh} to < {FRET_thresh}"]))
+    mean_list = [meandwell_lowtohigh,meandwell_hightolow,meandwell_hightohigh,meandwell_lowtolow]
+    return mean_list
+
+def file_reader(input_folder, data_type, column_names = False): 
+    """will import data
+
+    Args:
+        input_folder (directory): where data is stored
+        data_type (str): what data will be used to plot, needs to be either 'hist', 'TDP', 'transition_frequency'
+        or 'other'. 
+
+    Returns:
+        dataframe: dataframe with data to be used in subseqeunt codes
+    """
+    if data_type == 'hist':
+        filenames = glob.glob(input_folder + "/*.dat")
+        dfs = []
+        for filename in filenames:
+            dfs.append(pd.read_table(filename, sep="\s+", header=None)) ### will error if forward slash (e.g. "/s+")
+        test = pd.concat(dfs)
+        test_dfs = pd.DataFrame(test)
+        return test_dfs
+    elif data_type == 'TDP':
+        filename = input_folder
+        A = pd.read_table(filename, header = None)
+        A.columns = ['Molecule', 'FRET before transition', 'FRET after transition', 'Time']
+        return A
+    elif data_type == 'transition_frequency':
+        if not column_names:
+            print('no column_names found, specify list to use')
+            return
+        filenames = glob.glob(input_folder + "/*.csv")
+        dfs = []
+        for filename in filenames:
+            dfs.append(pd.read_csv(filename, header=None))
+        test = pd.concat(dfs, ignore_index=True)
+        test_dfs = pd.DataFrame(test)
+        test_dfs.columns = column_names
+        return test_dfs
+    elif data_type == 'other':
+        dfs = pd.read_csv(input_folder)
+        return dfs
+    else:
+        print('invalid data_type, please set data_type as "hist", "TDP","transition_frequency" or "other" if using for violin or heatmap plots')
+
+
+
