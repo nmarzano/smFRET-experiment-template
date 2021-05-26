@@ -13,6 +13,7 @@ from scipy import stats
 import pandas as pd
 from scipy.signal import savgol_filter
 import numpy as np
+import os
 
 output_folder = 'Experiment_1-description/python_results/Traces'
 if not os.path.exists(output_folder):

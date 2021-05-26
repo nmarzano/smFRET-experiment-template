@@ -15,31 +15,13 @@ data_paths = {
     "treatment_label_4":("figure_label", "data_directory_4/"),
     "treatment_label_5":("figure_label", "data_directory_5/")
 }
-################################################################################################
-################## defined function, imports individual dat files and concatenates into dataframe
-def file_reader(input_folder): 
-    filenames = glob.glob(input_folder + "/*.dat")
 
-    dfs = []
-    for filename in filenames:
-        dfs.append(pd.read_table(filename, sep="\s+", header=None)) ### will error if forward slash (e.g. "/s+")
-    test = pd.concat(dfs)
-    test_dfs = pd.DataFrame(test)
-    return test_dfs
-
-
-def remove_outliers(compiled_FRET, data_type = "raw"):
-    if data_type == "raw":
-        rawFRET = compiled_FRET[(compiled_FRET[3] > -0.5) & (compiled_FRET[3] < 1.5)].copy()
-        return rawFRET
-    if data_type == "idealized":
-        idealizedFRET = compiled_FRET[(compiled_FRET[4] > -0.5) & (compiled_FRET[4] < 1.5)].copy()
-        return idealizedFRET
+from Utilities.Data_analysis import remove_outliers, file_reader
 
 compiled_df = []
 for data_name, (label, data_path) in data_paths.items():
-    imported_data = file_reader(data_path)
-    cleaned_raw = remove_outliers(imported_data)    #### add "idealized" after imported_data to get idealized histograms
+    imported_data = file_reader(data_path, 'hist')
+    cleaned_raw = remove_outliers(imported_data, 'hist')    #### add "idealized" after imported_data to get idealized histograms
     cleaned_raw["treatment_name"] = data_name
     compiled_df.append(cleaned_raw)
 compiled_df = pd.concat(compiled_df)   #### .rename(columns = {1:"test", 3:"test2"}) ## can rename individually if needed
