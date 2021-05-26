@@ -6,9 +6,8 @@ import pandas as pd
 import numpy as np
 import glob
 
-
-filename = 'Experiment_X-description/python_results/TDP_cleaned.csv'
 output_folder = 'Experiment_X-description/python_results'
+filename = f'{output_folder}/TDP_cleaned.csv'
 
 
 FRET_thresh = 0.5 #### FRET value at which to filter data above or below. IF CHANGED, WILL NEED TO CHANGE ALL 0.5 VALUES (E.G. BELOW IN HEADERS) TO THE NEW VALUE
@@ -31,3 +30,7 @@ for treatment_name, df in TDP_data.groupby("treatment_name"):
     dwell_frequency = transition_frequency(filtered_data)
     dwell_frequency["sample"] = treatment_name
     dwell_frequency.to_csv(f"{output_folder}/Dwell_frequency/Filtered_dwellfrequency_{treatment_name}.csv", index = False, header = None)
+
+
+
+

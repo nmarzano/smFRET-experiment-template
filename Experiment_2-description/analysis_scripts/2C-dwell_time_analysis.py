@@ -7,9 +7,8 @@ import numpy as np
 import glob
 
 
-filename = 'Experiment_X-description/python_results/TDP_cleaned.csv'
 output_folder = 'Experiment_X-description/python_results'
-
+filename = f'{output_folder}/TDP_cleaned.csv'
 
 FRET_thresh = 0.5 #### FRET value at which to filter data above or below. IF CHANGED, WILL NEED TO CHANGE ALL 0.5 VALUES (E.G. BELOW IN HEADERS) TO THE NEW VALUE
 fps = 5  ### frames per second
