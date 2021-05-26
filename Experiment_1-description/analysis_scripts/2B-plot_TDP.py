@@ -1,7 +1,9 @@
 import pandas as pd
 from scipy.signal import find_peaks
 import numpy as np
-
+import os
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 output_folder = "Experiment_X-description/python_results/TDP_plots"
 
@@ -16,7 +18,6 @@ data_paths = {
     "treatment_label_4":"data_directory_1",
     "treatment_label_5":'data_directory_1'
 }
-
 
 ############### import cleaned data
 filename = 'Experiment_X-description/python_results/TDP_cleaned.csv'

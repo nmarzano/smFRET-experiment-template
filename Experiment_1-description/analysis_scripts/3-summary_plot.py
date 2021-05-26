@@ -3,22 +3,20 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 import glob
+import os
+import matplotlib.pyplot as plt
+import Utilities.Data_analysis as uda
 
 FRET_thresh = 0.5
 
 input_folder = 'Experiment_X-description/python_results'
-output_folder = "Experiment_X-description/python_results/Heatmaps"
+output_folder = f"{input_folder}/Heatmaps"
 
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
-    
-def file_reader(file_path):
-    dfs = pd.read_csv(file_path)
-    return dfs
 
 def concat_meandwell(input_folder):
     filenames = glob.glob(input_folder + "/*.csv")
-
     mean_concat = []
     for filename in filenames:
         mean_concat.append(pd.read_csv(filename))
@@ -26,40 +24,11 @@ def concat_meandwell(input_folder):
     test_dfs = pd.DataFrame(test)
     return test_dfs
 
-hist_data = file_reader(f'{input_folder}/Raw_FRET_histogram_data.csv')
-transition_frequency = file_reader(f'{input_folder}/Transition_frequency.csv')
+hist_data = uda.file_reader(f'{input_folder}/Raw_FRET_histogram_data.csv', 'other')
+transition_frequency = uda.file_reader(f'{input_folder}/Transition_frequency.csv', 'other')
 mean_dwell = concat_meandwell(f'{input_folder}/Mean_dwell')
 
-def float_generator(data_frame, treatment):
-    transition_frequency_arrow = data_frame[data_frame["sample"]== treatment]
-    normalised_number_lowtohigh = float(np.array(transition_frequency_arrow["< 0.5 to > 0.5"])/1000)
-    normalised_number_hightolow = float(np.array(transition_frequency_arrow["> 0.5 to < 0.5"])/1000)
-    normalised_number_hightohigh = float(np.array(transition_frequency_arrow["> 0.5 to > 0.5"])/1000)
-    normalised_number_lowtolow = float(np.array(transition_frequency_arrow["< 0.5 to < 0.5"])/1000)
-    arrow_list = [normalised_number_lowtohigh,normalised_number_hightolow,normalised_number_hightohigh,normalised_number_lowtolow]
-    return arrow_list
-
-
-def heatmap_prep(histogram_data, treatment):
-    subset_data = histogram_data[histogram_data["treatment_name"]==treatment]
-    total = len(subset_data[(subset_data["FRET"] < FRET_thresh) | (subset_data["FRET"] > FRET_thresh)])
-    subset_data_largerthanthresh = len(subset_data[subset_data["FRET"] > FRET_thresh])
-    subset_data_lessthanthresh = len(subset_data[subset_data["FRET"] < FRET_thresh])
-    time_below = (subset_data_lessthanthresh/total)
-    time_above = (subset_data_largerthanthresh/total)
-    thresh_dicts = {"< 0.5":[time_below], "> 0.5":[time_above] }
-    thresh_dfs = pd.DataFrame(thresh_dicts)
-    #thresh_dfs["treatment"] = treatment
-    return thresh_dfs
-
-def mean_dwell_prep(mean_dwell_data, treatment):
-    subset_mean_dwell = mean_dwell_data[mean_dwell_data["sample"]== treatment]
-    meandwell_lowtohigh = float(np.array(subset_mean_dwell["< 0.5 to > 0.5"]))
-    meandwell_hightolow = float(np.array(subset_mean_dwell["> 0.5 to < 0.5"]))
-    meandwell_hightohigh = float(np.array(subset_mean_dwell["> 0.5 to > 0.5"]))
-    meandwell_lowtolow = float(np.array(subset_mean_dwell["< 0.5 to < 0.5"]))
-    mean_list = [meandwell_lowtohigh,meandwell_hightolow,meandwell_hightohigh,meandwell_lowtolow]
-    return mean_list
+from Utilities.Data_analysis import float_generator, heatmap_prep, mean_dwell_prep
 
 def plot_heatmap(df_to_plot, arrow_details, mean):
     fig, ax = plt.subplots(figsize=(6,7))
@@ -82,9 +51,9 @@ def plot_heatmap(df_to_plot, arrow_details, mean):
 treatment_list = mean_dwell["sample"].to_list()  ### add .unique() if you were to use the hist_data dataframe
 
 for data_name in treatment_list:
-    arrow_info = float_generator(transition_frequency, data_name)
-    heatmap_info = heatmap_prep(hist_data, data_name)
-    mean = mean_dwell_prep(mean_dwell, data_name)
+    arrow_info = float_generator(transition_frequency, data_name, FRET_thresh)
+    heatmap_info = heatmap_prep(hist_data, data_name, FRET_thresh)
+    mean = mean_dwell_prep(mean_dwell, data_name, FRET_thresh)
     plot_heatmap(heatmap_info, arrow_info, mean).savefig(f"{output_folder}/Heatmap_{data_name}.svg", dpi = 600)
 
 

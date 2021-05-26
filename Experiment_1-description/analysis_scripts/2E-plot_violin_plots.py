@@ -4,9 +4,10 @@ import seaborn as sns
 from scipy import stats
 import pandas as pd
 import numpy as np
+import Utilities.Data_analysis as uda
 
 output_folder = "Experiment_X-description/python_results"
-
+FRET_thresh = 0.5 #### FRET value at which to filter data above or below. IF CHANGED, WILL NEED TO CHANGE ALL 0.5 VALUES (E.G. BELOW IN HEADERS) TO THE NEW VALUE
 ############# NEED TO MODIFY BASED ON DATASET 
 data_paths_violin = {
     "treatment_label_1":"data_directory_1/Filtered_dwelltime_treatment_1.csv",
@@ -16,30 +17,26 @@ data_paths_violin = {
     "treatment_label_5":'data_directory_5/Filtered_dwelltime_treatment_5.csv'
 }
 
-def file_reader(file_path):
-    dfs = pd.read_csv(file_path)
-    return dfs
-
 
 def compile(df, data_name):
-    violin_data_lowtolow = pd.DataFrame(df["< 0.5 to < 0.5"])
+    violin_data_lowtolow = pd.DataFrame(df[f"< {FRET_thresh} to < {FRET_thresh}"])
     violin_data_lowtolow.columns = ["y_axis"]
-    violin_data_lowtolow["transition_type"] = "< 0.5 to < 0.5"
+    violin_data_lowtolow["transition_type"] = f"< {FRET_thresh} to < {FRET_thresh}"
     violin_data_lowtolow["treatment"] = data_name
 
-    violin_data_lowtohigh = pd.DataFrame(df["< 0.5 to > 0.5"])
+    violin_data_lowtohigh = pd.DataFrame(df[f"< {FRET_thresh} to > {FRET_thresh}"])
     violin_data_lowtohigh.columns = ["y_axis"]
-    violin_data_lowtohigh["transition_type"] = "< 0.5 to > 0.5"
+    violin_data_lowtohigh["transition_type"] = f"< {FRET_thresh} to > {FRET_thresh}"
     violin_data_lowtohigh["treatment"] = data_name
 
-    violin_data_hightohigh = pd.DataFrame(df["> 0.5 to > 0.5"])
+    violin_data_hightohigh = pd.DataFrame(df[f"> {FRET_thresh} to > {FRET_thresh}"])
     violin_data_hightohigh.columns = ["y_axis"]
-    violin_data_hightohigh["transition_type"] = "> 0.5 to > 0.5"
+    violin_data_hightohigh["transition_type"] = f"> {FRET_thresh} to > {FRET_thresh}"
     violin_data_hightohigh["treatment"] = data_name
 
-    violin_data_hightolow = pd.DataFrame(df["> 0.5 to < 0.5"])
+    violin_data_hightolow = pd.DataFrame(df[f"> {FRET_thresh} to < {FRET_thresh}"])
     violin_data_hightolow.columns = ["y_axis"]
-    violin_data_hightolow["transition_type"] = "> 0.5 to < 0.5"
+    violin_data_hightolow["transition_type"] = f"> {FRET_thresh} to < {FRET_thresh}"
     violin_data_hightolow["treatment"] = data_name
     merged = pd.concat([violin_data_lowtolow, violin_data_lowtohigh, violin_data_hightohigh, violin_data_hightolow])
     return merged
@@ -47,13 +44,11 @@ def compile(df, data_name):
 
 test = []
 for data_name, data_path in data_paths_violin.items():
-    data = file_reader(data_path)
+    data = uda.file_reader(data_path, 'other')
     compiled_data = compile(data, data_name)
     test.append(compiled_data)
 final = pd.concat(test)
 final["y_axis_log10"] = np.log10(final['y_axis']) ## if need to plot in log scale
-
-
 
 ############# Code to plot data
 ############# NEED TO MODIFY BASED ON DATASET but can COPY FROM 1A-PLOT-HISTOGRAM
