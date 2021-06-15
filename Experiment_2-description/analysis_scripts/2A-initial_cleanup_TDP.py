@@ -16,7 +16,7 @@ data_paths = {
     "treatment_label_5":'data_directory_1'
 }
 
-from Utilities.Data_analysis import remove_outliers, filter_TDP, file_reader
+from Utilities.Data_analysis import remove_outliers, filter_TDP, file_reader, count_filt_mol
 
 compiled_df = []
 for data_name, data_path in data_paths.items():
@@ -32,4 +32,7 @@ filtered_data = filter_TDP(compiled_df, 0.3)  ##### number refers to the FRET th
 filtered_data.to_csv(f'{output_folder}/TDP_cleaned_filt.csv', index = False)
 ############### Save data to TDP_cleaned
 compiled_df.to_csv(f'{output_folder}/TDP_cleaned.csv', index = False)
+
+molcount = count_filt_mol(compiled_df, 0.2, data_paths, 0)  ## last number refers to the index of the treatment you want to subtract from others
+molcount.to_csv(f'{output_folder}/mol_below_0.2.csv', index = None)
 

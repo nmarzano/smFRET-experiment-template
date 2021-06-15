@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import glob as glob
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 def filter_TDP(data_frame, thresh = 0.3):
     """[optional function that removes molecules that do not transition below threshold at some point]
@@ -228,6 +230,57 @@ def file_reader(input_folder, data_type, column_names = False):
         return dfs
     else:
         print('invalid data_type, please set data_type as "hist", "TDP","transition_frequency" or "other" if using for violin or heatmap plots')
+
+def count_filt_mol(df, thresh, dataname, order):
+    """[summary]
+
+    Args:
+        df ([type]): [description]
+        thresh ([type]): [description]
+        dataname ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
+    filtered_data = filter_TDP(df, thresh)
+    data_paths = dataname
+    percent_mol_concat = {}
+    for data_name, data_path in data_paths.items():
+        total_mol = len(df[df['treatment_name']==data_name].Molecule.unique())
+        filt_mol = len(filtered_data[filtered_data['treatment_name']==data_name].Molecule.unique())
+        percent_mol = (filt_mol/total_mol)*100
+        percent_mol_concat[data_name] = percent_mol
+    percent_mol_concat = pd.DataFrame(percent_mol_concat, index = ['percent_mol']).T.reset_index().rename(columns={'index':'treatment'})
+    percent_mol_concat['norm_percent_mol'] = percent_mol_concat['percent_mol'] - percent_mol_concat.iloc[order,1]
+    return percent_mol_concat
+
+def fret_before_trans(dfs, thresh, to_drop = 'none'):
+    cleaned_df = []
+    for treatment_name, df in dfs.groupby("treatment_name"):
+        initial_data = df[df["treatment_name"] == treatment_name]    
+        cleaned = cleanup_dwell(initial_data)
+        cleaned_df.append(cleaned)
+    cleaned_concat = pd.concat(cleaned_df)
+    filt = []
+    for treatment_name, df in cleaned_concat.groupby("treatment_name"):
+        filt.append(df[df['FRET after transition'] <= thresh])
+    filtered_fafter = pd.concat(filt)
+    if to_drop == 'none':
+        plot1 = plt.figure(figsize = (12, 6))
+        sns.set(style = "darkgrid", font_scale = 1.5)
+        sns.violinplot(data = filtered_fafter, x = 'treatment_name', y = 'FRET before transition')
+        sns.stripplot(data = filtered_fafter, x = 'treatment_name', y = 'FRET before transition', color='black', alpha = 0.5)
+    else:
+        dropped = filtered_fafter[~filtered_fafter['treatment_name'].isin(to_drop)].dropna()
+        plot1 = plt.figure(figsize = (12, 6))
+        sns.set(style = "darkgrid", font_scale = 1.5)
+        sns.violinplot(data = dropped, x = 'treatment_name', y = 'FRET before transition')
+        sns.stripplot(data = dropped, x = 'treatment_name', y = 'FRET before transition', color='black', alpha = 0.5)
+    plt.rcParams['svg.fonttype'] = 'none'
+    plt.xlabel('Treatment')
+    plt.ylabel('FBefore')
+    plot1.savefig(f'{output_folder}/FRET_before_trans.svg', dpi = 600)
+    return plot1
 
 
 

@@ -17,7 +17,9 @@ headers = [f"< {FRET_thresh} to < {FRET_thresh}", f"< {FRET_thresh} to > {FRET_t
 headers_withsum =  [f"< {FRET_thresh} to < {FRET_thresh}", f"< {FRET_thresh} to > {FRET_thresh}", f"> {FRET_thresh} to > {FRET_thresh}", f"> {FRET_thresh} to < {FRET_thresh}", "> 0.5 to < 0.5", "sum", "sample"]
 TDP_data = pd.read_csv(filename, header = "infer")
 
-from Utilities.Data_analysis import cleanup_dwell, filter_dwell, transition_frequency, calculate_mean
+from Utilities.Data_analysis import cleanup_dwell, filter_dwell, transition_frequency, calculate_mean, fret_before_trans
+
+FRET_value_before_transition = fret_before_trans(TDP_data, 0.1, ['Native', 'Spontaneous'])
 
 
 for treatment_name, df in TDP_data.groupby("treatment_name"):
