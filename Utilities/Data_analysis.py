@@ -254,33 +254,18 @@ def count_filt_mol(df, thresh, dataname, order):
     percent_mol_concat['norm_percent_mol'] = percent_mol_concat['percent_mol'] - percent_mol_concat.iloc[order,1]
     return percent_mol_concat
 
-def fret_before_trans(dfs, thresh, to_drop = 'none'):
+def fret_before_trans(dfs, thresh, fps_clean, thresh_clean):
     cleaned_df = []
     for treatment_name, df in dfs.groupby("treatment_name"):
         initial_data = df[df["treatment_name"] == treatment_name]    
-        cleaned = cleanup_dwell(initial_data)
+        cleaned = cleanup_dwell(initial_data, fps_clean, thresh_clean)
         cleaned_df.append(cleaned)
     cleaned_concat = pd.concat(cleaned_df)
     filt = []
     for treatment_name, df in cleaned_concat.groupby("treatment_name"):
         filt.append(df[df['FRET after transition'] <= thresh])
     filtered_fafter = pd.concat(filt)
-    if to_drop == 'none':
-        plot1 = plt.figure(figsize = (12, 6))
-        sns.set(style = "darkgrid", font_scale = 1.5)
-        sns.violinplot(data = filtered_fafter, x = 'treatment_name', y = 'FRET before transition')
-        sns.stripplot(data = filtered_fafter, x = 'treatment_name', y = 'FRET before transition', color='black', alpha = 0.5)
-    else:
-        dropped = filtered_fafter[~filtered_fafter['treatment_name'].isin(to_drop)].dropna()
-        plot1 = plt.figure(figsize = (12, 6))
-        sns.set(style = "darkgrid", font_scale = 1.5)
-        sns.violinplot(data = dropped, x = 'treatment_name', y = 'FRET before transition')
-        sns.stripplot(data = dropped, x = 'treatment_name', y = 'FRET before transition', color='black', alpha = 0.5)
-    plt.rcParams['svg.fonttype'] = 'none'
-    plt.xlabel('Treatment')
-    plt.ylabel('FBefore')
-    plot1.savefig(f'{output_folder}/FRET_before_trans.svg', dpi = 600)
-    return plot1
+    return filtered_fafter
 
 
 
