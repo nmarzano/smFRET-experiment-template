@@ -33,6 +33,8 @@ filtered_data.to_csv(f'{output_folder}/TDP_cleaned_filt.csv', index = False)
 ############### Save data to TDP_cleaned
 compiled_df.to_csv(f'{output_folder}/TDP_cleaned.csv', index = False)
 
-molcount = count_filt_mol(compiled_df, 0.2, data_paths, 0)  ## last number refers to the index of the treatment you want to subtract from others
-molcount.to_csv(f'{output_folder}/mol_below_0.2.csv', index = None)
+############### calculate mol count
+FRET_value = 0.6
+molcount = count_filt_mol(compiled_df, FRET_value, data_paths, 1)  ## last number refers to the index of the treatment you want to subtract from others
+molcount.to_csv(f'{output_folder}/mol_below_{FRET_value}.csv', index = None)
 

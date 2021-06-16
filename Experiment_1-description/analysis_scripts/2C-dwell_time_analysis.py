@@ -19,8 +19,6 @@ TDP_data = pd.read_csv(filename, header = "infer")
 
 from Utilities.Data_analysis import cleanup_dwell, filter_dwell, transition_frequency, calculate_mean, fret_before_trans
 
-FRET_value_before_transition = fret_before_trans(TDP_data, 0.1, ['Native', 'Spontaneous'])
-
 
 for treatment_name, df in TDP_data.groupby("treatment_name"):
     initial_data = df[df["treatment_name"] == treatment_name]
@@ -34,5 +32,26 @@ for treatment_name, df in TDP_data.groupby("treatment_name"):
     dwell_frequency.to_csv(f"{output_folder}/Dwell_frequency/Filtered_dwellfrequency_{treatment_name}.csv", index = False, header = None)
 
 
+FRET_value_before_transition = fret_before_trans(TDP_data, 0.7, fps, FRET_thresh)
+
+def plot_fret_before(df, to_drop = 'none'):
+    if to_drop == 'none':
+        plot1 = plt.figure(figsize = (12, 6))
+        sns.set(style = "darkgrid", font_scale = 1.5)
+        sns.violinplot(data = df, x = 'treatment_name', y = 'FRET before transition')
+        sns.stripplot(data = df, x = 'treatment_name', y = 'FRET before transition', color='black', alpha = 0.5)
+    else:
+        dropped = df[~df['treatment_name'].isin(to_drop)].dropna()
+        plot1 = plt.figure(figsize = (12, 6))
+        sns.set(style = "darkgrid", font_scale = 1.5)
+        sns.violinplot(data = dropped, x = 'treatment_name', y = 'FRET before transition')
+        sns.stripplot(data = dropped, x = 'treatment_name', y = 'FRET before transition', color='black', alpha = 0.5)
+    plt.rcParams['svg.fonttype'] = 'none'
+    plt.xlabel('Treatment')
+    plt.ylabel('FBefore')
+    plot1.savefig(f'{output_folder}/FRET_before_trans.svg', dpi = 600)
+    return plot1
+
+plot_fret_before(FRET_value_before_transition)
 
 
