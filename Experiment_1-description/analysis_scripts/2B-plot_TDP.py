@@ -5,7 +5,8 @@ import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-output_folder = "Experiment_X-description/python_results/TDP_plots"
+input_folder = 'Experiment_X-description/python_results'
+output_folder = f'{input_folder}/TDP_plots'
 
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
@@ -20,7 +21,7 @@ data_paths = {
 }
 
 ############### import cleaned data
-filename = 'Experiment_X-description/python_results/TDP_cleaned.csv'
+filename = f'{input_folder}/TDP_cleaned.csv'
 TDP = pd.read_csv(filename, header="infer")
 
 

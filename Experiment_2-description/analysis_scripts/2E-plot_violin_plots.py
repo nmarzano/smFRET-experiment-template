@@ -97,6 +97,15 @@ def plot_violin(data, scale = "y_axis"):
 
 plot_violin(final, "y_axis")
 
+############# Code to generate and collate summary statistics of dwell times
+mean = final.groupby(['treatment', 'transition_type']).mean()
+sem =  final.groupby(['treatment', 'transition_type']).sem()
+N = final.groupby(['treatment', 'transition_type']).count()
+collated = pd.concat([mean,sem, N], axis = 1)
+collated.drop([col for col in collated.columns.tolist() if 'y_axis_log10' in col], axis = 1, inplace = True)
+collated.columns = ['mean_residence_time', 'sem', 'n']
+collated.reset_index(inplace = True)
+collated.to_csv(f"{output_folder}/summary.csv", index = False)
 
 
 
