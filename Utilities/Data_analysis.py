@@ -232,15 +232,16 @@ def file_reader(input_folder, data_type, column_names = False):
         print('invalid data_type, please set data_type as "hist", "TDP","transition_frequency" or "other" if using for violin or heatmap plots')
 
 def count_filt_mol(df, thresh, dataname, order):
-    """[summary]
+    """Will count the number of molecules in which the idealized FRET will go below a defined threshold at some point before photobleaching
 
     Args:
-        df ([type]): [description]
-        thresh ([type]): [description]
-        dataname ([type]): [description]
+        df (dataframe): Contains all the data required to plot TDP and identify transitions below threshold (i.e., FRET, idealized FRET, molecule)
+        thresh (float): Threshold to set. If set to 0.5, function will count the number of molecules that go below 0.5 at some point
+        dataname (dict): Dictionary containing keys for each treatment - used to find mol count for each treatment
 
     Returns:
-        [type]: [description]
+        dataframe: Will return dataframe with raw mol count and also corrected mol count. Corrected mol count is calculated as the Raw mol count subtracted
+        by the molcount of another treatment. The treatment to subtract is defined by 'order', which is the index of the treatment you want to subtract
     """
     filtered_data = filter_TDP(df, thresh)
     data_paths = dataname
@@ -255,6 +256,19 @@ def count_filt_mol(df, thresh, dataname, order):
     return percent_mol_concat
 
 def fret_before_trans(dfs, thresh, fps_clean, thresh_clean):
+    """Prepares a dataset in which 
+    Will plot a violin plot of all the FRET states immediately prior to a transition to another FRET state that is below a defined threshold
+
+    Args:
+        dfs (dataframe): Contains all the data required to plot TDP and identify transitions below threshold (i.e., FRET, idealized FRET, molecule)
+        thresh (float): Threshold that defines the FRET state that you want to look at. For example, if you want to look at the FRET state immediately priort
+        to a transition below 0.3 FRET then you will set 'thresh' as 0.3 
+        fps_clean ([type]): Required for cleanup_dwell function. Needs this to convert frames to seconds
+        thresh_clean ([type]): Required for cleanup_dwell function. Specifies the minimum residence time. All residence times less than thresh_clean will be deleted
+
+    Returns:
+        dataframe: Dataframe containing all the transitions in which the 'FRET after transition' is below 'thresh'
+    """
     cleaned_df = []
     for treatment_name, df in dfs.groupby("treatment_name"):
         initial_data = df[df["treatment_name"] == treatment_name]    
@@ -266,6 +280,8 @@ def fret_before_trans(dfs, thresh, fps_clean, thresh_clean):
         filt.append(df[df['FRET after transition'] <= thresh])
     filtered_fafter = pd.concat(filt)
     return filtered_fafter
+
+
 
 
 
