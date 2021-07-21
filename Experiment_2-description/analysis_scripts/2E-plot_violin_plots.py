@@ -72,7 +72,8 @@ def plot_violin(data, scale = "y_axis"):
             y = "y_axis",
             palette= colors_violin, 
             hue = "treatment", 
-            log_scale = True)
+            log_scale = True,
+            cut = 0)
         plt.ylabel("Residence time (s)")
         plt.xlabel("Transition class")
         plt.legend(loc = "upper right")
@@ -94,8 +95,28 @@ def plot_violin(data, scale = "y_axis"):
         plt.legend(loc = "upper left", bbox_to_anchor = (1,1), ncol =1)
         plot2.savefig(f"{output_folder}/Violin_plot_log.svg", dpi = 600)
         plt.show()
+    if scale == 'split':     
+        f, (ax_top, ax_bottom) = plt.subplots(ncols=1, nrows=2, sharex=True, gridspec_kw={'hspace':0.05})
+        sns.violinplot(x="transition_type", y="y_axis", hue="treatment",data=final, ax=ax_top, palette = colors_violin)
+        sns.violinplot(x="transition_type", y="y_axis", hue="treatment",data=final, ax=ax_bottom, cut = 0, palette = colors_violin)
+        ax_top.set_ylim(bottom=40)   # those limits are fake
+        ax_bottom.set_ylim(0,40)
+        sns.despine(ax=ax_bottom)
+        sns.despine(ax=ax_top, bottom=True)
+        ax = ax_top
+        d = .015  # how big to make the diagonal lines in axes coordinates
+        # arguments to pass to plot, just so we don't keep repeating them
+        kwargs = dict(transform=ax.transAxes, color='k', clip_on=False)
+        ax.plot((-d, +d), (-d, +d), **kwargs)        # top-left diagonal
+        ax2 = ax_bottom
+        kwargs.update(transform=ax2.transAxes)  # switch to the bottom axes
+        ax2.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
+        #remove one of the legend
+        ax_bottom.legend_.remove()
+        f.savefig(f"{output_folder}/Violin_plot_splitaxis.svg", dpi = 600)
+        plt.show()
 
-plot_violin(final, "y_axis")
+plot_violin(final, 'split')
 
 ############# Code to generate and collate summary statistics of dwell times
 mean = final.groupby(['treatment', 'transition_type']).mean()
