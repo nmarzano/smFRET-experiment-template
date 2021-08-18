@@ -42,6 +42,18 @@ for data_name, data_path in data_paths.items():
     compiled_df.append(imported_data)
 compiled_df = pd.concat(compiled_df)   #### .rename(columns = {1:"test", 3:"test2"}) ## can rename individually if needed
 
+def plot_intensity(treatment):
+    plt.rcParams['svg.fonttype'] = 'none'
+    sns.set(style = "darkgrid")
+    plot1 = plt.figure(figsize = (5, 2))
+    plt.xlim(0, 150, 10)
+    plt.ylim(0, 4000, 0.2)
+    sns.lineplot(x = treatment["Time"], y = treatment["donor"], color = 'green')
+    sns.lineplot(x = treatment["Time"], y = treatment["acceptor"], color = 'purple')
+    plt.xlabel("Time (s)")
+    plt.ylabel("FRET")
+    plt.show()
+    return plot1
 #FRET-time plot
 def plot_FRET(treatment):
     plt.rcParams['svg.fonttype'] = 'none'
@@ -61,4 +73,6 @@ for data_name, data_path in data_paths.items():
     treatment = compiled_df[compiled_df["treatment_name"] == data_name]
     mol_ident = data_path.split('/')[-1]
     plot_FRET(treatment).savefig(f'{output_folder}/{data_name}_Trace_{mol_ident}.svg', dpi = 600)
+    plot_intensity(treatment).savefig(f'{output_folder}/{data_name}_Trace_{mol_ident}_intensity.svg', dpi = 600)
+
 
