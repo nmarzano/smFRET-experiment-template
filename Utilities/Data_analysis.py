@@ -210,8 +210,8 @@ def file_reader(input_folder, data_type, column_names = False):
         return test_dfs
     elif data_type == 'TDP':
         filename = input_folder
-        A = pd.read_table(filename, header = None)
-        A.columns = ['Molecule', 'FRET before transition', 'FRET after transition', 'Time']
+        A = pd.read_table(filename, header = None, sep="\s+")
+        A.columns = ['Molecule', 'Idealized_FRET']
         return A
     elif data_type == 'transition_frequency':
         if not column_names:
