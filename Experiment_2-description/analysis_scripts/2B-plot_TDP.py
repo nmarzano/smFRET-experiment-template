@@ -28,7 +28,7 @@ TDP = pd.read_csv(filename, header="infer")
 def plot(treatment):
     plt.rcParams['svg.fonttype'] = 'none'
     plot1 = plt.figure(figsize = (6, 6))
-    plot1 = sns.JointGrid(data = treatment, x = treatment["FRET before transition"], y = treatment["FRET after transition"], xlim = (0,1.2), ylim = (0, 1.2))
+    plot1 = sns.JointGrid(data = treatment, x = treatment["FRET_before"], y = treatment["FRET_after"], xlim = (0,1.2), ylim = (0, 1.2))
     plot1.plot_joint(sns.kdeplot, cmap="PuBuGn", shade=bool, cbar=False, cbar_kws={'format': '%.0f%%', 'ticks': [0, 100]}, thresh=0.07, gridsize = 200)
     plot1.ax_joint.set_xticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
     plot1.ax_joint.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
