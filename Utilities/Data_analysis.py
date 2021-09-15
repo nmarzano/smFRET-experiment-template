@@ -16,7 +16,7 @@ def filter_TDP(data_frame, thresh = 0.3):
     """
     filtered_mol = []
     for treatment, df in data_frame.groupby("treatment_name"):
-        mol_list = df[(df["FRET before transition"] <= thresh)|(df["FRET after transition"] <= thresh)].Molecule.unique().tolist()
+        mol_list = df[(df["FRET_before"] <= thresh)|(df["FRET_after"] <= thresh)].Molecule.unique().tolist()
         filtered = df[df["Molecule"].isin(mol_list)]
         filtered_mol.append(filtered)
     filtered_mol = pd.concat(filtered_mol)
@@ -277,7 +277,7 @@ def fret_before_trans(dfs, thresh, fps_clean, thresh_clean):
     cleaned_concat = pd.concat(cleaned_df)
     filt = []
     for treatment_name, df in cleaned_concat.groupby("treatment_name"):
-        filt.append(df[df['FRET after transition'] <= thresh])
+        filt.append(df[df['FRET_after'] <= thresh])
     filtered_fafter = pd.concat(filt)
     return filtered_fafter
 
