@@ -84,10 +84,10 @@ def filter_dwell(df, FRET_thresh, headers):
     Returns:
         [dataframe]: [contains dwell time that has been categorized into each transition class]
     """
-    filtered_lowtohigh = df[(df["FRET before transition"] < FRET_thresh) & (df["FRET after transition"] > FRET_thresh)].copy()
-    filtered_lowtolow = df[(df["FRET before transition"] < FRET_thresh) & (df["FRET after transition"] < FRET_thresh)].copy()
-    filtered_hightolow = df[(df["FRET before transition"] > FRET_thresh) & (df["FRET after transition"] < FRET_thresh)].copy()
-    filtered_hightohigh = df[(df["FRET before transition"] > FRET_thresh) & (df["FRET after transition"] > FRET_thresh)].copy()
+    filtered_lowtohigh = df[(df["FRET_before"] < FRET_thresh) & (df["FRET_after"] > FRET_thresh)].copy()
+    filtered_lowtolow = df[(df["FRET_before"] < FRET_thresh) & (df["FRET_after"] < FRET_thresh)].copy()
+    filtered_hightolow = df[(df["FRET_before"] > FRET_thresh) & (df["FRET_after"] < FRET_thresh)].copy()
+    filtered_hightohigh = df[(df["FRET_before"] > FRET_thresh) & (df["FRET_after"] > FRET_thresh)].copy()
     dataf = [filtered_lowtolow["Time (s)"], filtered_lowtohigh["Time (s)"], filtered_hightohigh["Time (s)"], filtered_hightolow["Time (s)"]]
     df_col = pd.concat(dataf, axis = 1, keys = headers)
     df_col = df_col.apply(lambda x:pd.Series(x.dropna().values))  ## removes NaN values from each column in df_col
