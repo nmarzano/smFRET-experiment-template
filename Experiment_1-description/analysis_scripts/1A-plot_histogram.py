@@ -85,6 +85,8 @@ data_paths_ridgeline = {
 }
 
 pal = sns.color_palette(palette='mako', n_colors=12)
+matplotlib.rc('font', **font)
+plt.rcParams['svg.fonttype'] = 'none'
 g = sns.FacetGrid(compiled_df, row='treatment_name', hue='treatment_name', aspect=10, height=5, palette=pal)
 # then we add the densities kdeplots for each condition
 g.map(sns.kdeplot, 'FRET',
