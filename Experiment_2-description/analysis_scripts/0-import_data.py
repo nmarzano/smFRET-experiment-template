@@ -41,5 +41,5 @@ def move_file(containing_folders, filetype, output_folder):
         name = files.split("/")[-2]
         filelist = [filename for filename in os.listdir(files) if filetype in filename] # create list of files
         for filename in filelist:
-            shutil.copyfile(f"{files}{filename}", f"{output_folder}/{name}")        # if need to change filenames could have a function defined above that changes it
-move_file(containing_folders, ".txt", output_folder)
+            shutil.copyfile(f"{files}{filename}", f"{output_folder}{name}")        # if need to change filenames could have a function defined above that changes it
+move_file(containing_folders, ".dat", output_folder)
