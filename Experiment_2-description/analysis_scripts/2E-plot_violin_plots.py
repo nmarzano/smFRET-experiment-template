@@ -128,6 +128,16 @@ collated.columns = ['mean_residence_time', 'sem', 'n']
 collated.reset_index(inplace = True)
 collated.to_csv(f"{output_folder}/summary.csv", index = False)
 
-
+order = ['Native', 'Spontaneous', '0nMDnaJ', '50nMDnaJ', '100nMDnaJ', '200nMDnaJ', '500nMDnaJ', '1uMDnaJ', '3uMDnaJ', '5uMDnaJ', '10uMDnaJ']
+plot_test = sns.barplot(
+    data = collated, 
+    x = 'transition_type', 
+    y = 'mean_residence_time', 
+    hue = 'treatment', 
+    palette = 'mako', 
+    hue_order = order)
+plot_test.legend(fontsize = 12)
+plot_test.figure.savefig(f'{output_folder}/mean_residence.svg', dpi = 600)
+plt.show()
 
 ##### "Pastel1" - this is quite a nice colour scheme
