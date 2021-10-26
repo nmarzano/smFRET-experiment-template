@@ -33,12 +33,14 @@ for treatment_name, df in TDP_data.groupby("treatment_name"):
 
 FRET_value_before_transition = fret_before_trans(TDP_data, 0.7, fps, FRET_thresh)
 
+order = ['Native', 'Spontaneous', '0nMDnaJ', '50nMDnaJ', '100nMDnaJ', '200nMDnaJ', '500nMDnaJ', '1uMDnaJ', '3uMDnaJ', '5uMDnaJ', '10uMDnaJ']
+
 def plot_fret_before(df, to_drop = 'none'):
     if to_drop == 'none':
         plot1 = plt.figure(figsize = (12, 6))
         sns.set(style = "darkgrid", font_scale = 1.5)
-        sns.violinplot(data = df, x = 'treatment_name', y = 'FRET_before')
-        sns.stripplot(data = df, x = 'treatment_name', y = 'FRET_before', color='black', alpha = 0.5)
+        sns.violinplot(data = df, x = 'treatment_name', y = 'FRET_before', palette = 'mako', order = order)
+        sns.stripplot(data = df, x = 'treatment_name', y = 'FRET_before', color='black', alpha = 0.5, order = order)
     else:
         dropped = df[~df['treatment_name'].isin(to_drop)].dropna()
         plot1 = plt.figure(figsize = (12, 6))
