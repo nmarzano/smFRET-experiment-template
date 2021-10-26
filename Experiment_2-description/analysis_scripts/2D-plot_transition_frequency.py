@@ -42,6 +42,7 @@ plt.bar(labels, hightohigh, bottom=[i+j for i,j in zip(lowtolow, lowtohigh)], co
 plt.bar(labels, hightolow, bottom=[i+j+k for i,j,k in zip(lowtolow, lowtohigh, hightohigh)], color='green', edgecolor='white', width=barWidth,label = f"> {FRET_thresh} to < {FRET_thresh}")
 plt.legend(loc = "upper left", bbox_to_anchor = (1,1), ncol =1)
 plt.ylabel("Transition probability (%)")
+plt.xticks(rotation=45)
 plot1.savefig(f'{output_folder}/Transition_frequency_plot.svg', dpi = 600)
 
 
