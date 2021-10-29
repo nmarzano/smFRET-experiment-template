@@ -2,6 +2,8 @@
 
 **Purpose**: 
 
+**Major results and comments:**
+
 
 **Buffers used**: 
 
@@ -22,4 +24,3 @@
 
 **References/Resources:** 
 
-**Comments:**
