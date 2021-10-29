@@ -12,6 +12,9 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
+output_folder = 'Experiment_1-description/python_results'
+exposure = 0.200  # in seconds
+frame_rate = 1/exposure
 
 # creates the grey version of the colormap,  each R, G and B can be adjusted to change the colour
 N = 256
@@ -47,7 +50,7 @@ x = pd.read_fwf(filename)
 x.columns = ['Time (s)', 'FRET']
 
 
-T = x['Time (s)']/5
+T = x['Time (s)']/frame_rate
 FRET = x['FRET']
 
 
@@ -66,4 +69,4 @@ g.ax_joint.set_facecolor("#404040") # to change the colour of the background
 # plt.colorbar(cax=cbaxes, ticks=[0.,1], orientation='horizontal')
 # plt.show()
 
-plt.savefig('Experiment_1-High-conc-chap_removal-with-GrpE/python_results/Heatmap.svg', dpi = 600)
+plt.savefig(f'{output_folder}/Heatmap.svg', dpi = 600)
