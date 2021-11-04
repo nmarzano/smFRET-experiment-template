@@ -189,7 +189,7 @@ def mean_dwell_prep(mean_dwell_data, treatment, FRET_thresh):
     mean_list = [meandwell_lowtohigh,meandwell_hightolow,meandwell_hightohigh,meandwell_lowtolow]
     return mean_list
 
-def file_reader(input_folder, data_type, column_names = False): 
+def file_reader(input_folder, data_type, frame_rate, column_names = False): 
     """will import data
 
     Args:
@@ -224,6 +224,19 @@ def file_reader(input_folder, data_type, column_names = False):
         test = pd.concat(dfs, ignore_index=True)
         test_dfs = pd.DataFrame(test)
         test_dfs.columns = column_names
+        return test_dfs
+    elif data_type == 'heatmap':
+        filenames = glob.glob(input_folder + "/*.dat")
+        dfs = []
+        for filename in filenames:
+            name = filename.split('\\')[1].split('_')[0]
+            mol_data = pd.read_table(filename, sep="\s+", header=None)
+            mol_data.columns = ['frame', 'donor', 'acceptor', 'FRET', 'idealized_FRET']
+            mol_data['molecule'] = name
+            mol_data['time'] = mol_data['frame']/frame_rate
+            dfs.append(mol_data) ### will error if forward slash (e.g. "/s+")
+        test = pd.concat(dfs)
+        test_dfs = pd.DataFrame(test)
         return test_dfs
     elif data_type == 'other':
         dfs = pd.read_csv(input_folder)
