@@ -189,7 +189,7 @@ def mean_dwell_prep(mean_dwell_data, treatment, FRET_thresh):
     mean_list = [meandwell_lowtohigh,meandwell_hightolow,meandwell_hightohigh,meandwell_lowtolow]
     return mean_list
 
-def file_reader(input_folder, data_type, frame_rate, column_names = False): 
+def file_reader(input_folder, data_type, frame_rate = False, column_names = False): 
     """will import data
 
     Args:
