@@ -268,7 +268,7 @@ def count_filt_mol(df, thresh, dataname, order):
     percent_mol_concat['norm_percent_mol'] = percent_mol_concat['percent_mol'] - percent_mol_concat.iloc[order,1]
     return percent_mol_concat
 
-def fret_before_trans(dfs, thresh, fps_clean, thresh_clean):
+def fret_state_trans(dfs, thresh, fps_clean, thresh_clean, state = 'after'):
     """Prepares a dataset in which 
     Will plot a violin plot of all the FRET states immediately prior to a transition to another FRET state that is below a defined threshold
 
@@ -290,9 +290,12 @@ def fret_before_trans(dfs, thresh, fps_clean, thresh_clean):
     cleaned_concat = pd.concat(cleaned_df)
     filt = []
     for treatment_name, df in cleaned_concat.groupby("treatment_name"):
-        filt.append(df[df['FRET_after'] <= thresh])
-    filtered_fafter = pd.concat(filt)
-    return filtered_fafter
+        if state == 'after':
+            filt.append(df[df['FRET_before'] <= thresh])
+        elif state == 'before':
+            filt.append(df[df['FRET_after'] <= thresh])
+    filtered_f_state = pd.concat(filt)
+    return filtered_f_state
 
 
 
