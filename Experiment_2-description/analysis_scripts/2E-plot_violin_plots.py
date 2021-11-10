@@ -236,7 +236,8 @@ def plot_parameters_scattbar(df, x_col, x_order, y_col, hue_col, hue_order, show
 
 ### to plot with SEM
 x_order = final['transition_type'].unique().tolist()
-palette = dict(zip(order, sns.color_palette('mako', 11))) ### adjust number to be the same as the number of treatments you are plotting
+sample_sum = len(order)
+palette = dict(zip(order, sns.color_palette('mako', sample_sum))) ### adjust number to be the same as the number of treatments you are plotting
 font = {'weight' : 'normal','size'   : 12 }
 plt.rcParams['font.sans-serif'] = "Arial"
 plt.rcParams['font.family'] = "sans-serif"
