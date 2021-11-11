@@ -25,8 +25,8 @@ for data_name, (label, data_path) in data_paths.items():
     cleaned_raw["treatment_name"] = data_name
     compiled_df.append(cleaned_raw)
 compiled_df = pd.concat(compiled_df)   #### .rename(columns = {1:"test", 3:"test2"}) ## can rename individually if needed
-compiled_df.columns = ["frames", "donor", "acceptor", "FRET", "idealized FRET", "treatment_name"]
-compiled_df.to_csv(f'{output_folder}/Raw_FRET_histogram_data.csv', index = False)
+compiled_df.columns = ["frames", "donor", "acceptor", "FRET", "idealized FRET", 'molecule_number', "treatment_name"]
+compiled_df.to_csv(f'{output_folder}/Cleaned_FRET_histogram_data.csv', index = False)
 
 ################## Code to assemble relevant data into an array and then plot using a single line of code
 colors = {
@@ -41,13 +41,14 @@ labels = {data_name:label for data_name, (label, data_path) in data_paths.items(
 
 order = ["KJE_late","KJE_early", "KJ_ATP", "Spontaneous", "Native"]
 
-
 font = {'weight' : 'normal',
 'size'   : 12 }
 matplotlib.rcParams['font.sans-serif'] = "Arial"
 matplotlib.rcParams['font.family'] = "sans-serif"
 matplotlib.rc('font', **font)
 plt.rcParams['svg.fonttype'] = 'none'
+
+
 sns.set(style="darkgrid", font_scale = 1.5, rc={'figure.figsize':(8,5.5)})
 plot_hist = sns.kdeplot(
     data = compiled_df, 

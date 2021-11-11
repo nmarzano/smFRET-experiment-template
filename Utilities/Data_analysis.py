@@ -204,7 +204,10 @@ def file_reader(input_folder, data_type, frame_rate = False, column_names = Fals
         filenames = glob.glob(input_folder + "/*.dat")
         dfs = []
         for filename in filenames:
-            dfs.append(pd.read_table(filename, sep="\s+", header=None)) ### will error if forward slash (e.g. "/s+")
+            molecule_number = filename.split('\\')[1].split('_')[0]
+            hist_data = pd.read_table(filename, sep="\s+", header=None)
+            hist_data['molecule number'] = molecule_number
+            dfs.append(hist_data) ### will error if forward slash (e.g. "/s+")
         test = pd.concat(dfs)
         test_dfs = pd.DataFrame(test)
         return test_dfs
