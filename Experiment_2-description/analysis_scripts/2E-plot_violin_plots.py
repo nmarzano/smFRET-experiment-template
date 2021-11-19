@@ -9,6 +9,9 @@ import Utilities.Data_analysis as uda
 output_folder = "Experiment_X-description/python_results"
 FRET_thresh = 0.5 #### FRET value at which to filter data above or below. IF CHANGED, WILL NEED TO CHANGE ALL 0.5 VALUES (E.G. BELOW IN HEADERS) TO THE NEW VALUE
 ############# NEED TO MODIFY BASED ON DATASET 
+
+order = ['Native', 'Spontaneous', '0nMDnaJ', '50nMDnaJ', '100nMDnaJ', '200nMDnaJ', '500nMDnaJ', '1uMDnaJ', '3uMDnaJ', '5uMDnaJ', '10uMDnaJ']
+
 data_paths_violin = {
     "treatment_label_1":"data_directory_1/Filtered_dwelltime_treatment_1.csv",
     "treatment_label_2":"data_directory_2/Filtered_dwelltime_treatment_2.csv",
@@ -97,8 +100,8 @@ def plot_violin(data, scale = "y_axis"):
         plt.show()
     if scale == 'split':     
         f, (ax_top, ax_bottom) = plt.subplots(ncols=1, nrows=2, sharex=True, gridspec_kw={'hspace':0.05})
-        sns.violinplot(x="transition_type", y="y_axis", hue="treatment",data=final, ax=ax_top, palette = colors_violin)
-        sns.violinplot(x="transition_type", y="y_axis", hue="treatment",data=final, ax=ax_bottom, cut = 0, palette = colors_violin)
+        sns.violinplot(x="transition_type", y="y_axis", hue="treatment",data=final, ax=ax_top, palette = 'mako')
+        sns.violinplot(x="transition_type", y="y_axis", hue="treatment",data=final, ax=ax_bottom, cut = 0, palette = 'mako')
         ax_top.set_ylim(bottom=40)   # those limits are fake
         ax_bottom.set_ylim(0,40)
         sns.despine(ax=ax_bottom)
@@ -118,6 +121,7 @@ def plot_violin(data, scale = "y_axis"):
 
 plot_violin(final, 'split')
 
+
 ############# Code to generate and collate summary statistics of dwell times
 mean = final.groupby(['treatment', 'transition_type']).mean()
 sem =  final.groupby(['treatment', 'transition_type']).sem()
@@ -128,17 +132,6 @@ collated.columns = ['mean_residence_time', 'sem', 'n']
 collated.reset_index(inplace = True)
 collated.to_csv(f"{output_folder}/summary.csv", index = False)
 
-order = ['Native', 'Spontaneous', '0nMDnaJ', '50nMDnaJ', '100nMDnaJ', '200nMDnaJ', '500nMDnaJ', '1uMDnaJ', '3uMDnaJ', '5uMDnaJ', '10uMDnaJ']
-plot_test = sns.barplot(
-    data = collated, 
-    x = 'transition_type', 
-    y = 'mean_residence_time', 
-    hue = 'treatment', 
-    palette = 'mako', 
-    hue_order = order)
-plot_test.legend(fontsize = 12)
-plot_test.figure.savefig(f'{output_folder}/mean_residence.svg', dpi = 600)
-plt.show()
 
 ### code to plot with SEM
 def get_cmap(n, name='hsv'):
@@ -250,3 +243,18 @@ plt.ylim(0, 50)
 plt.ylabel('Transition class')
 fig.savefig(f'{output_folder}/mean_residence_withSEM.svg', dpi = 600)
 plt.show()
+
+
+##### "Pastel1" - this is quite a nice colour scheme
+
+## code to plot without SEM
+# plot_test = sns.barplot(
+#     data = collated, 
+#     x = 'transition_type', 
+#     y = 'mean_residence_time', 
+#     hue = 'treatment', 
+#     palette = 'mako', 
+#     hue_order = order)
+# plot_test.legend(fontsize = 12)
+# plot_test.figure.savefig(f'{output_folder}/mean_residence.svg', dpi = 600)
+# plt.show()
