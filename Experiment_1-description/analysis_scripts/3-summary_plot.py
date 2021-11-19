@@ -24,7 +24,7 @@ def concat_meandwell(input_folder):
     test_dfs = pd.DataFrame(test)
     return test_dfs
 
-hist_data = uda.file_reader(f'{input_folder}/Raw_FRET_histogram_data.csv', 'other')
+hist_data = uda.file_reader(f'{input_folder}/Cleaned_FRET_histogram_data.csv', 'other')
 transition_frequency = uda.file_reader(f'{input_folder}/Transition_frequency.csv', 'other')
 mean_dwell = concat_meandwell(f'{input_folder}/Mean_dwell')
 
