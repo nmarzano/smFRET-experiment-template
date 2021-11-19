@@ -39,20 +39,22 @@ for treatment_name, df in TDP_data.groupby("treatment_name"):
 
 order = ['Native', 'Spontaneous', '0nMDnaJ', '50nMDnaJ', '100nMDnaJ', '200nMDnaJ', '500nMDnaJ', '1uMDnaJ', '3uMDnaJ', '5uMDnaJ', '10uMDnaJ']
 
-def plot_fret_trans(df, FRET_state = 'after', to_drop = 'none'):
+Transition_threshold = 0.5
+
+def plot_fret_trans(df, FRET_state = 'after', to_drop = 'none', threshold = Transition_threshold):
     if to_drop == 'none':
         if FRET_state == 'after':
             plot1 = plt.figure(figsize = (12, 6))
             sns.set(style = "darkgrid", font_scale = 1.5)
             sns.violinplot(data = df, x = 'treatment_name', y = 'FRET_after', palette = palette, order = order)
             sns.stripplot(data = df, x = 'treatment_name', y = 'FRET_after', color='black', alpha = 0.25, order = order)
-            plt.ylabel('FRET state after transition from < 0.3')
+            plt.ylabel(f'FRET state after transition from < {threshold}')
         elif FRET_state == 'before':
             plot1 = plt.figure(figsize = (12, 6))
             sns.set(style = "darkgrid", font_scale = 1.5)
             sns.violinplot(data = df, x = 'treatment_name', y = 'FRET_before', palette = palette, order = order)
             sns.stripplot(data = df, x = 'treatment_name', y = 'FRET_before', color='black', alpha = 0.25, order = order)
-            plt.ylabel('FRET state before transition to < 0.3')
+            plt.ylabel(f'FRET state before transition to < {threshold}')
     else:
         dropped = df[~df['treatment_name'].isin(to_drop)].dropna()
         plot1 = plt.figure(figsize = (12, 6))
@@ -63,15 +65,15 @@ def plot_fret_trans(df, FRET_state = 'after', to_drop = 'none'):
     plt.xlabel('Treatment')
     plt.ylim(-0.1, 1.2)
     plt.xticks(rotation=45)
-    plot1.savefig(f'{output_folder}/FRET_before_trans.svg', dpi = 600)
+    plot1.savefig(f'{plot_folder}/FRET_{FRET_state}_trans_{Transition_threshold}.svg', dpi = 600)
     plt.show()
 
 
-FRET_value_after_transition = fret_state_trans(TDP_data, 0.2, fps, FRET_thresh, 'after')
+FRET_value_after_transition = fret_state_trans(TDP_data, Transition_threshold, fps, FRET_thresh, 'after')
 plot_fret_trans(FRET_value_after_transition, 'after')
 
 
-FRET_value_before_transition = fret_state_trans(TDP_data, 0.2, fps, FRET_thresh, 'before')
+FRET_value_before_transition = fret_state_trans(TDP_data, Transition_threshold, fps, FRET_thresh, 'before')
 plot_fret_trans(FRET_value_before_transition, 'before')
 
 
