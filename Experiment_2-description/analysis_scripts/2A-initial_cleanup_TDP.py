@@ -9,8 +9,8 @@ import os
 
 output_folder = 'Experiment_1-description/python_results'
 data_paths = {
-    "key":"Experiment_1-description/raw_data/_PATH_D051521_T1159.dat",
-    'key':'Experiment_1-description/raw_data/PATH_D051521_T1447.dat',
+    "key":"TDPdata",
+    'key':'TDPdata',
 }
 
 
