@@ -13,13 +13,13 @@ FRET_thresh = 0.5 #### FRET value at which to filter data above or below. IF CHA
 order = ['Native', 'Spontaneous', '0nMDnaJ', '50nMDnaJ', '100nMDnaJ', '200nMDnaJ', '500nMDnaJ', '1uMDnaJ', '3uMDnaJ', '5uMDnaJ', '10uMDnaJ']
 
 data_paths_violin = {
-    "treatment_label_1":"data_directory_1/Filtered_dwelltime_treatment_1.csv",
-    "treatment_label_2":"data_directory_2/Filtered_dwelltime_treatment_2.csv",
-    "treatment_label_3":"data_directory_3/Filtered_dwelltime_treatment_3.csv",
-    "treatment_label_4":"data_directory_4/Filtered_dwelltime_treatment_4.csv",
-    "treatment_label_5":'data_directory_5/Filtered_dwelltime_treatment_5.csv'
+    "treatment_label_1":"data_directory_1",
+    "treatment_label_2":"data_directory_2",
+    "treatment_label_3":"data_directory_3",
+    "treatment_label_4":"data_directory_4",
+    "treatment_label_5":'data_directory_5',
 }
-
+#### Directory for above should come from the Dwell_times folder in python_results
 
 def compile(df, data_name):
     violin_data_lowtolow = pd.DataFrame(df[f"< {FRET_thresh} to < {FRET_thresh}"])
