@@ -28,7 +28,7 @@ from Utilities.Data_analysis import cleanup_dwell, filter_dwell, transition_freq
 
 for treatment_name, df in TDP_data.groupby("treatment_name"):
     initial_data = df[df["treatment_name"] == treatment_name]
-    cleaned_data = cleanup_dwell(initial_data, fps, thresh) ##### to keep the first dwell state, simply change code to "cleanup_dwell(initial_data, "keep")
+    cleaned_data = cleanup_dwell(initial_data, fps, thresh, 'keep') ##### to keep the first dwell state, simply change code to "cleanup_dwell(initial_data, "keep")
     filtered_data = filter_dwell(cleaned_data, FRET_thresh, headers)
     filtered_data.to_csv(f"{output_folder}/Dwell_times/Filtered_dwelltime_{treatment_name}.csv", index = False)
     mean_dwell = calculate_mean(filtered_data, treatment_name)
