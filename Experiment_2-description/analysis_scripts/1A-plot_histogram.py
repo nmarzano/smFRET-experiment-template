@@ -41,30 +41,12 @@ labels = {data_name:label for data_name, (label, data_path) in data_paths.items(
 
 order = ["KJE_late","KJE_early", "KJ_ATP", "Spontaneous", "Native"]
 
-
 font = {'weight' : 'normal',
 'size'   : 12 }
 matplotlib.rcParams['font.sans-serif'] = "Arial"
 matplotlib.rcParams['font.family'] = "sans-serif"
 matplotlib.rc('font', **font)
 plt.rcParams['svg.fonttype'] = 'none'
-sns.set(style="darkgrid", font_scale = 1.5, rc={'figure.figsize':(8,5.5)})
-plot_hist = sns.kdeplot(
-    data = compiled_df, 
-    palette = colors, 
-    x = "FRET",
-    hue="treatment_name",
-    hue_order = order,
-    common_norm=False, 
-    fill = True, 
-    linewidth = 1.5, 
-    alpha = 0.25)
-plt.xlim(0, 1, 10)
-plt.xlabel("FRET")
-plt.legend([labels[treatment] for treatment in reversed(order)],loc='upper left', fontsize = 15)
-
-plot_hist.figure.savefig(f'{output_folder}/Histogram.svg', dpi = 600)
-plt.show()
 
 ###### FOR RIDGELINE PLOTS
 ###################################################
@@ -85,6 +67,8 @@ data_paths_ridgeline = {
 }
 
 pal = sns.color_palette(palette='mako', n_colors=12)
+matplotlib.rc('font', **font)
+plt.rcParams['svg.fonttype'] = 'none'
 g = sns.FacetGrid(compiled_df, row='treatment_name', hue='treatment_name', aspect=10, height=5, palette=pal)
 # then we add the densities kdeplots for each condition
 g.map(sns.kdeplot, 'FRET',
@@ -116,3 +100,23 @@ plt.xlim(-.4, 1.2)
 g.savefig(f'{output_folder}/Histogram-ridgeline.svg', dpi = 600)
 plt.show()
 
+
+def plot_hist(df, order):
+    sns.set(style="darkgrid", font_scale = 1.5, rc={'figure.figsize':(8,5.5)})
+    plot_hist = sns.kdeplot(
+        data = df, 
+        palette = 'mako', 
+        x = "FRET",
+        hue="treatment_name",
+        hue_order = order,
+        common_norm=False, 
+        fill = True, 
+        linewidth = 1.5, 
+        alpha = 0.25)
+    plt.xlim(0, 1, 10)
+    plt.xlabel("FRET")
+    plt.legend([labels[treatment] for treatment in reversed(order)],loc='upper left', fontsize = 15)
+    plot_hist.figure.savefig(f'{output_folder}/Histogram.svg', dpi = 600)
+    plt.show()
+
+plot_hist(compiled_df, order)

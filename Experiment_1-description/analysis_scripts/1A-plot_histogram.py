@@ -48,25 +48,6 @@ matplotlib.rcParams['font.family'] = "sans-serif"
 matplotlib.rc('font', **font)
 plt.rcParams['svg.fonttype'] = 'none'
 
-
-sns.set(style="darkgrid", font_scale = 1.5, rc={'figure.figsize':(8,5.5)})
-plot_hist = sns.kdeplot(
-    data = compiled_df, 
-    palette = colors, 
-    x = "FRET",
-    hue="treatment_name",
-    hue_order = order,
-    common_norm=False, 
-    fill = True, 
-    linewidth = 1.5, 
-    alpha = 0.25)
-plt.xlim(0, 1, 10)
-plt.xlabel("FRET")
-plt.legend([labels[treatment] for treatment in reversed(order)],loc='upper left', fontsize = 15)
-
-plot_hist.figure.savefig(f'{output_folder}/Histogram.svg', dpi = 600)
-plt.show()
-
 ###### FOR RIDGELINE PLOTS
 ###################################################
 ###################################################
@@ -118,3 +99,24 @@ plt.xlabel('FRET', fontweight='bold', fontsize=100)
 plt.xlim(-.4, 1.2)
 g.savefig(f'{output_folder}/Histogram-ridgeline.svg', dpi = 600)
 plt.show()
+
+
+def plot_hist(df, order):
+    sns.set(style="darkgrid", font_scale = 1.5, rc={'figure.figsize':(8,5.5)})
+    plot_hist = sns.kdeplot(
+        data = df, 
+        palette = 'mako', 
+        x = "FRET",
+        hue="treatment_name",
+        hue_order = order,
+        common_norm=False, 
+        fill = True, 
+        linewidth = 1.5, 
+        alpha = 0.25)
+    plt.xlim(0, 1, 10)
+    plt.xlabel("FRET")
+    plt.legend([labels[treatment] for treatment in reversed(order)],loc='upper left', fontsize = 15)
+    plot_hist.figure.savefig(f'{output_folder}/Histogram.svg', dpi = 600)
+    plt.show()
+
+plot_hist(compiled_df, order)
