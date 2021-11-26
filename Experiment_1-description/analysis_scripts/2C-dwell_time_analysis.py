@@ -40,7 +40,7 @@ for treatment_name, df in TDP_data.groupby("treatment_name"):
 
 Transition_threshold = 0.5
 
-def plot_fret_trans(df, FRET_state = 'after', to_drop = 'none', threshold = Transition_threshold):
+def plot_fret_trans(df, FRET_state = 'after', to_drop = 'none', threshold = Transition_threshold, palette = 'mako'):
     if to_drop == 'none':
         if FRET_state == 'after':
             plot1 = plt.figure(figsize = (12, 6))
@@ -101,35 +101,48 @@ def count_chaperone_events(dfs, thresh, fps_clean, thresh_clean):
     test.fillna(0, inplace = True)
     return test
  
-org_chap_events = count_chaperone_events(dfs = TDP_data, thresh = 0.3, fps_clean = fps, thresh_clean = FRET_thresh)
+org_chap_events = count_chaperone_events(dfs = TDP_data, thresh = 0.2, fps_clean = fps, thresh_clean = FRET_thresh)
 org_chap_events['FRET_after_normalised'] = org_chap_events['FRET_after']/org_chap_events['Total Molecule Lifetime (min)']
 org_chap_events['FRET_before_normalised'] = org_chap_events['FRET_before']/org_chap_events['Total Molecule Lifetime (min)']
+org_chap_events['bind_and_release'] = org_chap_events[['FRET_after', 'FRET_before']].min(axis = 1)
+org_chap_events['bind_and_release_overtime'] = (org_chap_events['bind_and_release']/org_chap_events['Total Molecule Lifetime (min)'])
+org_chap_events['bind_and_release_overtime'] = org_chap_events['bind_and_release_overtime'].replace(0, np.nan)
 
-def plot_binding_release(df, chaperone = 'binding'):
+
+def plot_binding_release(df, chaperone = 'binding', order = False, palette = 'mako'):
     if chaperone == 'binding':
-        plot1 = plt.figure(figsize = (12, 6))
-        sns.violinplot(data = df, y = 'FRET_after_normalised', x = 'treatment', cut = 0, order = order, palette = palette)
-        sns.stripplot(data = df, y = 'FRET_after_normalised', x = 'treatment', color='black', alpha = 0.25, order = order)
-        plt.ylabel('# of chaperone binding events/min/molecule')
-        plt.xticks(rotation = 45)
-        plot1.savefig(f'{plot_folder}/chaperone_binding_rate_per_molecule.svg', dpi = 600)
-        plt.show()
+        ycol = 'FRET_after_normalised'
+        ylabel = '# of chaperone binding events/min/molecule'
+        title = 'chaperone_binding_rate_per_molecule'
     if chaperone == 'release':
-        plot2 = plt.figure(figsize = (12, 6))
-        sns.violinplot(data = df, y = 'FRET_before_normalised', x = 'treatment', cut = 0, order = order, palette = palette)
-        sns.stripplot(data = df, y = 'FRET_before_normalised', x = 'treatment', color='black', alpha = 0.25, order = order)
-        plt.ylabel('# of chaperone release events/min/molecule')
-        plt.xticks(rotation = 45)
-        plot2.savefig(f'{plot_folder}/chaperone_release_rate_per_molecule.svg', dpi = 600)
-        plt.show() 
+        ycol = 'FRET_before_normalised'
+        ylabel = '# of chaperone release events/min/molecule'
+        title = 'chaperone_release_rate_per_molecule'
     if chaperone == 'binding_events':
-        plot3 = plt.figure(figsize = (12, 6))
-        sns.violinplot(data = df, y = 'FRET_after', x = 'treatment', cut = 0, order = order, palette = palette)
-        sns.stripplot(data = df, y = 'FRET_after', x = 'treatment', color='black', alpha = 0.25, order = order)
-        plt.xticks(rotation = 45)
-        plt.ylabel('# of chaperone binding events/molecule')
-        plot3.savefig(f'{plot_folder}/chaperone_binding_events_per_molecule.svg', dpi = 600)
-        plt.show()
+        ycol = 'FRET_after'
+        ylabel = '# of chaperone binding events/molecule'
+        title = 'chaperone_binding_events_per_molecule'
+    if chaperone == 'binding_and_release':
+        ycol = 'bind_and_release_overtime'
+        ylabel = '# of chaperone binding and release events/molecule/min'
+        title = 'chaperone_binding_and_release_events_per_molecule_min'
+    plot1 = plt.figure(figsize = (12, 6))
+    sns.violinplot(data = df, y = ycol, x = 'treatment', cut = 0, order = order, palette = palette)
+    sns.stripplot(data = df, y = ycol, x = 'treatment', color='black', alpha = 0.25, order = order)
+    plt.xticks(rotation = 45)
+    plt.ylabel(f'{ylabel}')
+    plot1.savefig(f'{plot_folder}/{title}.svg', dpi = 600)
+    plt.show()
 
-plot_binding_release(org_chap_events, 'binding')  ######## options are 'binding', 'release', 'binding_events'
+plot_binding_release(org_chap_events, 'binding_and_release', order)
 
+mean_chaperone_bind_release_mean = org_chap_events.groupby('treatment')['bind_and_release_overtime'].mean()
+mean_chaperone_bind_release_sem = org_chap_events.groupby('treatment')['bind_and_release_overtime'].sem()
+mean_chaperone_bind_release_N = org_chap_events.groupby('treatment')['bind_and_release_overtime'].count()
+bind_release_col = pd.concat([mean_chaperone_bind_release_mean,mean_chaperone_bind_release_sem, mean_chaperone_bind_release_N], axis = 1)
+bind_release_col.columns = ['mean_bind_and_release', 'sem', 'n']
+bind_release_col.reset_index(inplace = True)
+bind_release_col.to_csv(f"{output_folder}/bind_release_col.csv", index = False)
+
+
+proportion_of_mol_with_chap_events = (org_chap_events.groupby('treatment')['Molecule'].count()/TDP_data.groupby('treatment_name')['Molecule'].count())*100
