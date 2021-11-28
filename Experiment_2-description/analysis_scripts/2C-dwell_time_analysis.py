@@ -37,7 +37,9 @@ for treatment_name, df in TDP_data.groupby("treatment_name"):
     dwell_frequency["sample"] = treatment_name
     dwell_frequency.to_csv(f"{output_folder}/Dwell_frequency/Filtered_dwellfrequency_{treatment_name}.csv", index = False, header = None)
 
-
+###############
+###############   Plot FRET states before or after a transition to a defined FRET state
+###############
 Transition_threshold = 0.5
 
 def plot_fret_trans(df, FRET_state = 'after', to_drop = 'none', threshold = Transition_threshold, palette = 'mako'):
@@ -67,15 +69,15 @@ def plot_fret_trans(df, FRET_state = 'after', to_drop = 'none', threshold = Tran
     plot1.savefig(f'{plot_folder}/FRET_{FRET_state}_trans_{Transition_threshold}.svg', dpi = 600)
     plt.show()
 
-
 FRET_value_after_transition = fret_state_trans(TDP_data, Transition_threshold, fps, FRET_thresh, 'after')
 plot_fret_trans(FRET_value_after_transition, 'after')
-
 
 FRET_value_before_transition = fret_state_trans(TDP_data, Transition_threshold, fps, FRET_thresh, 'before')
 plot_fret_trans(FRET_value_before_transition, 'before')
 
-
+###############
+###############  Calculate the number of binding or release events (defined when FRET crosses a FRET threshold) for each
+###############  molecule then normalise to the lifetime of that molecule to get the rate - also plot
 
 def count_chaperone_events(dfs, thresh, fps_clean, thresh_clean):
     cleaned_df = []
@@ -136,6 +138,10 @@ def plot_binding_release(df, chaperone = 'binding', order = False, palette = 'ma
 
 plot_binding_release(org_chap_events, 'binding_and_release', order)
 
+#################
+#################   Calculate the mean, sem and N of binding and release events for statistical analysis
+#################
+
 mean_chaperone_bind_release_mean = org_chap_events.groupby('treatment')['bind_and_release_overtime'].mean()
 mean_chaperone_bind_release_sem = org_chap_events.groupby('treatment')['bind_and_release_overtime'].sem()
 mean_chaperone_bind_release_N = org_chap_events.groupby('treatment')['bind_and_release_overtime'].count()
@@ -144,5 +150,40 @@ bind_release_col.columns = ['mean_bind_and_release', 'sem', 'n']
 bind_release_col.reset_index(inplace = True)
 bind_release_col.to_csv(f"{output_folder}/bind_release_col.csv", index = False)
 
+##################
+##################  Caluclate the proportion of transitions that are significant (i.e., have a change in FRET state
+##################  above a defined threshold) and also the proportion of molecules that experience these transitions
+##################
 
-proportion_of_mol_with_chap_events = (org_chap_events.groupby('treatment')['Molecule'].count()/TDP_data.groupby('treatment_name')['Molecule'].count())*100
+def find_large_transitions(dfs, delta_thresh):
+    mol_with_large_trans = []
+    for treatment, df in dfs.groupby('treatment_name'):
+        filt = df[df['FRET_trans_difference'] > delta_thresh]
+        filt_count_mol = pd.DataFrame(filt[filt['FRET_trans_difference'] > delta_thresh].agg({"Molecule": "nunique"})/df.agg({"Molecule": "nunique"})*100)
+        filt_count_mol['treatment'] = treatment
+        filt_count_mol['proportion_of_mol'] = (filt['Molecule'].count()/df['Molecule'].count())*100
+        mol_with_large_trans.append(filt_count_mol)
+    dfs = pd.concat(mol_with_large_trans)
+    dfs = pd.DataFrame(dfs).reset_index()
+    dfs.drop(columns = 'index', inplace =  True)
+    dfs.columns = ['proportion_mol_large_transition', 'treatment', 'proportion_of_large_transitions']
+    return dfs
+
+def plot_large_transitions(df, type = 'transition_prob', palette = 'mako'):
+    if type == 'transition_prob': 
+        ycol = 'proportion_of_large_transitions'
+    if type == 'proportion_of_mol': 
+        ycol = 'proportion_mol_large_transition'
+    plot = plt.figure(figsize = (6, 3))
+    sns.barplot(data = df, 
+        y = ycol, 
+        x = 'treatment',
+        order = order, 
+        palette = palette)
+    plt.xticks(rotation = 45)
+    plot.savefig(f'{plot_folder}/{ycol}.svg', dpi = 600)
+    plt.show()
+
+large_transitions_to_plot = find_large_transitions(TDP_data, 0.5)
+plot_large_transitions(large_transitions_to_plot)
+
