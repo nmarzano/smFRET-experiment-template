@@ -154,6 +154,7 @@ bind_release_col.to_csv(f"{output_folder}/bind_release_col.csv", index = False)
 ##################  Caluclate the proportion of transitions that are significant (i.e., have a change in FRET state
 ##################  above a defined threshold) and also the proportion of molecules that experience these transitions
 ##################
+TDP_data['FRET_trans_difference'] = abs(TDP_data['FRET_before'] - TDP_data['FRET_after'])
 
 def find_large_transitions(dfs, delta_thresh):
     mol_with_large_trans = []
@@ -185,5 +186,5 @@ def plot_large_transitions(df, type = 'transition_prob', palette = 'mako'):
     plt.show()
 
 large_transitions_to_plot = find_large_transitions(TDP_data, 0.5)
-plot_large_transitions(large_transitions_to_plot)
+plot_large_transitions(large_transitions_to_plot)      ##### 'proportion_of_mol'
 
