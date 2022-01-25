@@ -12,11 +12,14 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import glob as glob
+import os
 
 from Utilities.Data_analysis import file_reader
 
 input_folder = 'Experiment_1-early-stage-KJE-refolding/raw_data/Chan1_KJE_0-6min'
-output_folder = 'Experiment_1-early-stage-KJE-refolding/python_results'
+output_folder = 'Experiment_1-early-stage-KJE-refolding/python_results/Heatmaps'
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
 exposure = 0.200  # in seconds
 frame_rate = 1/exposure
 
@@ -29,7 +32,8 @@ sns.set(style="whitegrid")
 g = sns.JointGrid(data = initial, x='time', y='FRET', xlim = (0,200), ylim = (0, 1.1))
 g.plot_joint(plt.hexbin, gridsize=(50,50), cmap='ocean_r', mincnt=0, bins=80)
 g.plot_marginals(sns.histplot, kde=True, bins=20)
-plt.savefig(f'{output_folder}/Heatmap.svg', dpi = 600)
+identifier = input_folder.split('/')[-1]
+plt.savefig(f'{output_folder}/Heatmap_{identifier}.svg', dpi = 600)
 
 
 # # creates the grey version of the colormap,  each R, G and B can be adjusted to change the colour
