@@ -12,18 +12,54 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import glob as glob
-import os
 
 from Utilities.Data_analysis import file_reader
 
-input_folder = 'Experiment_1-early-stage-KJE-refolding/raw_data/Chan1_KJE_0-6min'
-output_folder = 'Experiment_1-early-stage-KJE-refolding/python_results/Heatmaps'
-if not os.path.exists(output_folder):
-    os.makedirs(output_folder)
-exposure = 0.200  # in seconds
+input_folder = 'Figure_1-Validation-of-Fluc-sensor/raw_data/200715_Fluc_FoldandUnfoldtraces'
+output_folder = 'Figure_1-Validation-of-Fluc-sensor/python_results'
+exposure = 0.500  # in seconds
 frame_rate = 1/exposure
 
+data_paths = {
+    'Heatmap':('Heatmap', 'Figure_1-Validation-of-Fluc-sensor/raw_data/200715_Fluc_FoldandUnfoldtraces')
+}
 initial = file_reader(input_folder, 'heatmap', frame_rate)
+
+
+def remove_outliers(compiled, plot_type, data_type = "raw"):
+    """[removes outliers from dataframe]
+
+    Args:
+        compiled ([dataframe]): [raw dataframe containing outliers to be removed]
+        plot_type ([str]): [string can either be 'hist' for histogram data or 'TDP' for TDP data]
+        data_type (str, optional): [removes either raw FRET values or 'idealized' FRET values]. Defaults to "raw".
+
+    Returns:
+        [dataframe]: [returns cleaned data without outliers]
+    """
+    if plot_type == 'hist':
+        if data_type == "raw":
+            rawFRET = compiled[(compiled['FRET'] > -0.5) & (compiled['FRET'] < 1.5)].copy()
+            return rawFRET
+        if data_type == "idealized":
+            idealizedFRET = compiled[(compiled[4] > -0.5) & (compiled[4] < 1.5)].copy()
+            return idealizedFRET
+    elif plot_type == 'TDP':
+        outliers = compiled[(compiled["FRET before transition"] < -0.5)|(compiled["FRET before transition"] > 1.5)|(compiled["FRET after transition"] < -0.5) | (compiled["FRET after transition"] > 1.5)].index
+        compiled.drop(outliers, inplace = True)
+        return compiled
+    else:
+        print('invalid plot type, please set plot_type as "hist" or "TDP" - you idiot')
+
+compiled_df = []
+for data_name, (label, data_path) in data_paths.items():
+    imported_data = file_reader(input_folder, 'heatmap', frame_rate)
+    cleaned_raw = remove_outliers(imported_data, 'hist')    #### add "idealized" after imported_data to get idealized histograms
+    cleaned_raw["treatment_name"] = data_name
+    compiled_df.append(cleaned_raw)
+compiled_df = pd.concat(compiled_df)   #### .rename(columns = {1:"test", 3:"test2"}) ## can rename individually if needed
+compiled_df.columns = ["frames", "donor", "acceptor", "FRET", "idealized FRET", 'molecule_number', 'time', "treatment_name"]
+
 
 
 
