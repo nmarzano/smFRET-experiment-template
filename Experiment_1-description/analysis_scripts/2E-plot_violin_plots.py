@@ -41,8 +41,14 @@ def compile(df, data_name):
     violin_data_hightolow.columns = ["y_axis"]
     violin_data_hightolow["transition_type"] = f"> {FRET_thresh} to < {FRET_thresh}"
     violin_data_hightolow["treatment"] = data_name
-    merged = pd.concat([violin_data_lowtolow, violin_data_lowtohigh, violin_data_hightohigh, violin_data_hightolow])
-    return merged
+    return pd.concat(
+        [
+            violin_data_lowtolow,
+            violin_data_lowtohigh,
+            violin_data_hightohigh,
+            violin_data_hightolow,
+        ]
+    )
 
 
 test = []

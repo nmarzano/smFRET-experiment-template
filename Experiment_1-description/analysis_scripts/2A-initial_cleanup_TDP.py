@@ -11,6 +11,8 @@ output_folder = 'Experiment_1-description/python_results'
 data_paths = {
     "key":"TDPdata",
     'key':'TDPdata',
+    "key":"TDPdata",
+    'key':'TDPdata',
 }
 
 
@@ -31,8 +33,7 @@ def calculate_dwell_time(df):
     df_test3 = pd.concat(df_test2)
     df_test3.columns = ['FRET_state', 'Time', 'Molecule', 'number_of_frames']
     df_test3 = df_test3.reset_index().drop('Idealized_FRET', axis = 1)
-    df_test4 = df_test3[df_test3.groupby('Molecule').Molecule.transform('count') > 1]
-    return df_test4
+    return df_test3[df_test3.groupby('Molecule').Molecule.transform('count') > 1]
 
 def generate_transitions(df):
     df_toconcat = []

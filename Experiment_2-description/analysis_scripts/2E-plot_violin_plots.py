@@ -21,7 +21,6 @@ data_paths_violin = {
 }
 #### Directory for above should come from the Dwell_times folder in python_results
 
-
 def compile(df, data_name):
     violin_data_lowtolow = pd.DataFrame(df[f"< {FRET_thresh} to < {FRET_thresh}"])
     violin_data_lowtolow.columns = ["y_axis"]
@@ -42,8 +41,14 @@ def compile(df, data_name):
     violin_data_hightolow.columns = ["y_axis"]
     violin_data_hightolow["transition_type"] = f"> {FRET_thresh} to < {FRET_thresh}"
     violin_data_hightolow["treatment"] = data_name
-    merged = pd.concat([violin_data_lowtolow, violin_data_lowtohigh, violin_data_hightohigh, violin_data_hightolow])
-    return merged
+    return pd.concat(
+        [
+            violin_data_lowtolow,
+            violin_data_lowtohigh,
+            violin_data_hightohigh,
+            violin_data_hightolow,
+        ]
+    )
 
 
 test = []

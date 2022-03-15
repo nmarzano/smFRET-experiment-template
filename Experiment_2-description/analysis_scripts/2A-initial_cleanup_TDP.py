@@ -11,6 +11,8 @@ output_folder = 'Experiment_1-description/python_results'
 data_paths = {
     "key":"TDPdata",
     'key':'TDPdata',
+    "key":"TDPdata",
+    'key':'TDPdata',
 }
 
 
@@ -31,8 +33,7 @@ def calculate_dwell_time(df):
     df_test3 = pd.concat(df_test2)
     df_test3.columns = ['FRET_state', 'Time', 'Molecule', 'number_of_frames']
     df_test3 = df_test3.reset_index().drop('Idealized_FRET', axis = 1)
-    df_test4 = df_test3[df_test3.groupby('Molecule').Molecule.transform('count') > 1]
-    return df_test4
+    return df_test3[df_test3.groupby('Molecule').Molecule.transform('count') > 1]
 
 def generate_transitions(df):
     df_toconcat = []
@@ -67,6 +68,9 @@ for data_name, data_path in data_paths.items():
     raw_TDPdata.append(df2)
 compiled_raw_TDP = pd.concat(raw_TDPdata)   
 compiled_raw_TDP.to_csv(f'{output_folder}/TDP_raw.csv', index = False)
+
+filtered_data = filter_TDP(compiled_TDP, 0.3)  ##### number refers to the FRET threshold to filter data. Will only include molecules that go below this set threshold. Will default to 0.3 
+filtered_data.to_csv(f'{output_folder}/TDP_cleaned_filt.csv', index = False)
 
 ############### calculate mol count
 FRET_value = 0.6
