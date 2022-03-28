@@ -7,15 +7,13 @@ import numpy as np
 import shutil
 import os
 
+output_folder = "Experiment_X-description/raw_data/"  ### Change for each experiment
 
 input_folders = ["directory_1/",
 "directory_2/",
 "directory_3/",
 "directory_4/"
 ]
-
-output_folder = "Experiment_X-description/raw_data/"  ### Change for each experiment
-
 
 def move_folders(input_folders, filetype, output_folder):
     for folder in input_folders:
