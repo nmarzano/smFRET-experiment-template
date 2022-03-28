@@ -134,6 +134,7 @@ org_chap_events['bind_and_release_overtime'] = org_chap_events['bind_and_release
 
 
 def plot_binding_release(df, chaperone = 'binding', order = False, palette = 'mako'):
+    # sourcery skip: switch
     """Plots the number or rate of chaperone binding and/or release events per molecule
 
     Args:
