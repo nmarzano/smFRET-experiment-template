@@ -20,7 +20,6 @@ FRET_thresh = 0.5 #### FRET value at which to filter data above or below. IF CHA
 fps = 5  ### frames per second
 thresh = 2 ### should be 10x expsoure if using NL515 smoothing on MASH FRET
 headers = [f"< {FRET_thresh} to < {FRET_thresh}", f"< {FRET_thresh} to > {FRET_thresh}", f"> {FRET_thresh} to > {FRET_thresh}", f"> {FRET_thresh} to < {FRET_thresh}"]
-headers_withsum =  [f"< {FRET_thresh} to < {FRET_thresh}", f"< {FRET_thresh} to > {FRET_thresh}", f"> {FRET_thresh} to > {FRET_thresh}", f"> {FRET_thresh} to < {FRET_thresh}", "> 0.5 to < 0.5", "sum", "sample"]
 TDP_data = pd.read_csv(filename, header = "infer")
 
 from Utilities.Data_analysis import cleanup_dwell, filter_dwell, transition_frequency, calculate_mean, fret_state_trans
