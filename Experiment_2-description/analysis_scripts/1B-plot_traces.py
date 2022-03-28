@@ -26,8 +26,11 @@ data_paths = {
     "example3":"Figures/Figure_5/raw_data/200715_Fluc_FoldandUnfold/80_PATH_D111020_T2254.dat"
 }
 
-exposure = 0.5  ### exposure in seconds
+exposure = 0.2  ### exposure in seconds
 
+
+##############
+############## Code to import data and concatenate all molecule data for sequential plotting
 def load_data(filename):
     trace_df = pd.DataFrame(np.loadtxt(filename))
     trace_df.columns = ["frames", "donor", "acceptor", "FRET", "idealized FRET"]
@@ -42,6 +45,10 @@ for data_name, data_path in data_paths.items():
     compiled_df.append(imported_data)
 compiled_df = pd.concat(compiled_df)   #### .rename(columns = {1:"test", 3:"test2"}) ## can rename individually if needed
 
+
+
+############
+############ Code to plot FRET and/or intensity traces
 def plot_intensity(treatment):
     plt.rcParams['svg.fonttype'] = 'none'
     sns.set(style = "darkgrid")
@@ -54,7 +61,7 @@ def plot_intensity(treatment):
     plt.ylabel("FRET")
     plt.show()
     return plot1
-#FRET-time plot
+
 def plot_FRET(treatment):
     plt.rcParams['svg.fonttype'] = 'none'
     sns.set(style = "darkgrid")
@@ -74,3 +81,5 @@ for data_name, data_path in data_paths.items():
     mol_ident = data_path.split('/')[-1]
     plot_FRET(treatment).savefig(f'{output_folder}/{data_name}_Trace_{mol_ident}.svg', dpi = 600)
     plot_intensity(treatment).savefig(f'{output_folder}/{data_name}_Trace_{mol_ident}_intensity.svg', dpi = 600)
+
+

@@ -21,6 +21,9 @@ data_paths = {
     "treatment_label_5":("figure_label", "data_directory_5/")
 }
 
+
+##########
+########## Data from all data sets in the dict will be imported and concatenated into a single dataframe. Outliers wil be removed.
 from Utilities.Data_analysis import remove_outliers, file_reader
 
 compiled_df = []
@@ -33,29 +36,20 @@ compiled_df = pd.concat(compiled_df)   #### .rename(columns = {1:"test", 3:"test
 compiled_df.columns = ["frames", "donor", "acceptor", "FRET", "idealized FRET", 'molecule_number', "treatment_name"]
 compiled_df.to_csv(f'{output_folder}/Cleaned_FRET_histogram_data.csv', index = False)
 
-################## Code to assemble relevant data into an array and then plot using a single line of code
-colors = {
-    "Native": "black", 
-    "Spontaneous":"darkorange", 
-    "treatment_3":"skyblue", 
-    "treatment_4":"royalblue", 
-    "treatment_5":"darkviolet"
-}
+
+###### FOR RIDGELINE PLOTS
+###################################################
+###################################################
 
 labels = {data_name:label for data_name, (label, data_path) in data_paths.items()}
-
-order = ["KJE_late","KJE_early", "KJ_ATP", "Spontaneous", "Native"]
-
-font = {'weight' : 'normal',
-'size'   : 12 }
+order = ["5","4", "3", "2", "1"] ### sets order for histogram
+font = {'weight' : 'normal', 'size'   : 12 }
 matplotlib.rcParams['font.sans-serif'] = "Arial"
 matplotlib.rcParams['font.family'] = "sans-serif"
 matplotlib.rc('font', **font)
 plt.rcParams['svg.fonttype'] = 'none'
 
-###### FOR RIDGELINE PLOTS
-###################################################
-###################################################
+####### Sets order for ridgeline plot
 data_paths_ridgeline = {
     "1":"label",
     '2':'label',
@@ -105,6 +99,16 @@ plt.xlim(-.4, 1.2)
 g.savefig(f'{output_folder}/Histogram-ridgeline.svg', dpi = 600)
 plt.show()
 
+#################
+################# Code to plot regular histogram
+#################
+colors = {
+    "Native": "black", 
+    "Spontaneous":"darkorange", 
+    "treatment_3":"skyblue", 
+    "treatment_4":"royalblue", 
+    "treatment_5":"darkviolet"
+}
 
 def plot_hist(df, order):
     sns.set(style="darkgrid", font_scale = 1.5, rc={'figure.figsize':(8,5.5)})

@@ -18,7 +18,7 @@ from scipy import optimize
 import scipy.integrate as integrate
 from lmfit import models
 
-input_folder = 'Figure5_GrpE-titration\python_results'
+input_folder = 'Experiment_1-description/python_results'
 output_folder = f"{input_folder}/GaussianFits"  ### modify for each experiment
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
@@ -110,6 +110,26 @@ collated.to_csv(f'{output_folder}/histogram_proportions.csv', index = False)
 ###### - Do not change - these conditions are now set (if you want to play around just duplicate the function)
 
 def fit_gauss_dif_constrained_allpeaks(df, treatment, mu_1, sigma_1, amplitude_1, gamma_1, mu_2, sigma_2, amplitude_2, mu_3, sigma_3, amplitude_3, gamma_3):
+    """Set paramaters and fit histogram data to a 3-gaussian model. 
+
+    Args:
+        df (dataframe): dataframe containing cleaned FRET values used to plot histogram
+        treatment (str): determines what treatment you want to look at within the dataset
+        mu_1 (float): set the mean of the first gaussian
+        sigma_1 (float): set the value of the width of the first gaussian
+        amplitude_1 (float): estimate for the height of the first gaussian
+        gamma_1 (float): sets the skew parameter - positive values result in skew to right and negative values result in skew to the left
+        mu_2 (float): set the mean of the second gaussian
+        sigma_2 (float): estimate for the width of the second gaussian
+        amplitude_2 (float): estimate for the height of the second gaussian
+        mu_3 (float): estimate for the mean of the third gaussian
+        sigma_3 (float): set the width of the third gaussian
+        amplitude_3 (float): estimate for the height of the third gaussian
+        gamma_3 (float): set the skew parameter - positive values result in skew to right and negative values result in skew to the left
+
+    Returns:
+        dataframe, plots: returns the proportional area of each gausssian relative to the sum of all three gaussians. Also shows what the fit of each gaussian looks like.
+    """
     filt_df = df[df['treatment_name'] == treatment]
     bins = np.arange(-0.21, 1.1, 0.025) 
     inds = np.digitize(filt_df['FRET'].astype(float), bins)

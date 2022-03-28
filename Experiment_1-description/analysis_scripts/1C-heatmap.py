@@ -15,12 +15,12 @@ import glob as glob
 
 from Utilities.Data_analysis import file_reader
 
-output_folder = 'Experiment_1-PPR-with-1uM-atpH/python_results'
+output_folder = 'Experiment_1-description/python_results'
 exposure = 0.200  # in seconds
 frame_rate = 1/exposure
 
 data_paths = {
-    'Flowin_1nMatpH':('Flow-in 1 nM atpH', 'Experiment_3-PPR-with-1nM_atpH/raw_data/PPR_1nMatpH_0-6min_traces'),
+    'treatment':('treatment_name', 'Experiment_1-description/raw_data/treatment_to_plot'),
 }
 
 def remove_outliers(compiled, plot_type, data_type = "raw"):

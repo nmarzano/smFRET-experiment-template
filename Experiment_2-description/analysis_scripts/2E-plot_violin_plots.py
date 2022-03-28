@@ -7,10 +7,8 @@ import numpy as np
 import Utilities.Data_analysis as uda
 
 output_folder = "Experiment_X-description/python_results"
-FRET_thresh = 0.5 #### FRET value at which to filter data above or below. IF CHANGED, WILL NEED TO CHANGE ALL 0.5 VALUES (E.G. BELOW IN HEADERS) TO THE NEW VALUE
-############# NEED TO MODIFY BASED ON DATASET 
-
-order = ['Native', 'Spontaneous', '0nMDnaJ', '50nMDnaJ', '100nMDnaJ', '200nMDnaJ', '500nMDnaJ', '1uMDnaJ', '3uMDnaJ', '5uMDnaJ', '10uMDnaJ']
+FRET_thresh = 0.5 #### FRET value at which to filter data above or below. 
+order = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 data_paths_violin = {
     "treatment_label_1":"data_directory_1",
@@ -21,7 +19,16 @@ data_paths_violin = {
 }
 #### Directory for above should come from the Dwell_times folder in python_results
 
-def compile(df, data_name):
+def compiled(df, data_name):
+    """Will filter transitions dependent on a threshold defined above as FRET_thresh to calculate residenc time for each transition class
+
+    Args:
+        df (dataframe): dataset containing the residence times  for each treatment
+        data_name (_type_): treatment name  
+
+    Returns:
+        dataframe: compiles all transition classes (with residence times) from all treatments together
+    """
     violin_data_lowtolow = pd.DataFrame(df[f"< {FRET_thresh} to < {FRET_thresh}"])
     violin_data_lowtolow.columns = ["y_axis"]
     violin_data_lowtolow["transition_type"] = f"< {FRET_thresh} to < {FRET_thresh}"
@@ -54,7 +61,7 @@ def compile(df, data_name):
 test = []
 for data_name, data_path in data_paths_violin.items():
     data = uda.file_reader(data_path, 'other')
-    compiled_data = compile(data, data_name)
+    compiled_data = compiled(data, data_name)
     test.append(compiled_data)
 final = pd.concat(test)
 final["y_axis_log10"] = np.log10(final['y_axis']) ## if need to plot in log scale
@@ -227,8 +234,13 @@ def plot_parameters_scattbar(df, x_col, x_order, y_col, hue_col, hue_order, show
 
     # To only label once in legend
     handles, labels = ax.get_legend_handles_labels()
-    ax.legend(handles[0:number_groups], labels[0:number_groups],
-              bbox_to_anchor=(1.0, 1.00), title=hue_col)
+    ax.legend(
+        handles[:number_groups],
+        labels[:number_groups],
+        bbox_to_anchor=(1.0, 1.00),
+        title=hue_col,
+    )
+
 
     return ax
 
@@ -250,17 +262,3 @@ plt.ylabel('Transition class')
 fig.savefig(f'{output_folder}/mean_residence_withSEM.svg', dpi = 600)
 plt.show()
 
-
-##### "Pastel1" - this is quite a nice colour scheme
-
-## code to plot without SEM
-# plot_test = sns.barplot(
-#     data = collated, 
-#     x = 'transition_type', 
-#     y = 'mean_residence_time', 
-#     hue = 'treatment', 
-#     palette = 'mako', 
-#     hue_order = order)
-# plot_test.legend(fontsize = 12)
-# plot_test.figure.savefig(f'{output_folder}/mean_residence.svg', dpi = 600)
-# plt.show()
