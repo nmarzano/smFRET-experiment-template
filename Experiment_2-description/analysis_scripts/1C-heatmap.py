@@ -15,9 +15,11 @@ import glob as glob
 
 from Utilities.Data_analysis import file_reader
 
-output_folder = 'Experiment_1-PPR-with-1uM-atpH/python_results'
+output_folder = 'Experiment_1-description/python_results'
 exposure = 0.200  # in seconds
 frame_rate = 1/exposure
+FRET_thresh = 0.6 #### Used to filt the threshold for transitions
+
 
 data_paths = {
     'treatment':('treatment_name', 'Experiment_1-description/raw_data/treatment_to_plot'),
@@ -67,4 +69,96 @@ for data_name, (label, data_path) in data_paths.items():
 compiled_df = pd.concat(compiled_df)   #### .rename(columns = {1:"test", 3:"test2"}) ## can rename individually if needed
 compiled_df.columns = ["frames", "donor", "acceptor", "FRET", "idealized FRET", 'molecule_number', 'time', "treatment_name"]
 plot_heatmap(compiled_df, 100, 80)
+
+
+
+
+def calculate_dwell_time(df):
+    """Function to convert raw idealized data to a form in which the duration of each idealized state is calculated
+
+    Args:
+        df (dataframe): dataframe containing each molecule and the idealized fret 
+
+    Returns:
+        dataframe: returns dataframe containing the duration of each FRET state from each molecule
+    """
+    df_test2 = []
+    for Molecule, dfs in df.groupby('molecule_number'):
+        frame_length = len(dfs)
+        test = dfs.groupby([dfs['idealized FRET'].ne(dfs['idealized FRET'].shift()).cumsum(), 'idealized FRET']).size()
+        test = test.reset_index(level = 1, drop = False)
+        test['Molecule'] = Molecule
+        test['number_of_frames'] = frame_length
+        df_test2.append(test)
+    df_test3 = pd.concat(df_test2)
+    df_test3.columns = ['FRET_state', 'Time', 'Molecule', 'number_of_frames']
+    df_test3 = df_test3.reset_index().drop('idealized FRET', axis = 1)
+    return df_test3[df_test3.groupby('Molecule').Molecule.transform('count') > 1]
+
+
+def generate_transitions(df):
+    """Converts the duration of each FRET state into a transition, whereby the FRET state before, the FRET state after
+    and the duration of the FRET state before a transition is given in a single line. Each line represents a single transition.
+
+    Args:
+        df (dataframe): dataframe generated following 'calculate_dwell_time' function in which the duration of a certain
+        FRET state is given for each FRET state for all molecules
+
+    Returns:
+        dataframe: returns a dataframe in which each row represents a transition, with FRET before transition, FRET after transition
+        and duration of FRET state before transition (given in number of frames in column Time) provided
+    """
+    df_toconcat = []
+    for molecule, dfs in df.groupby('Molecule'):
+        thing1 = dfs.assign(FRET_after = dfs.FRET_state.shift(-1)).dropna()
+        df_toconcat.append(thing1)
+    compiled_df = pd.concat(df_toconcat).reset_index(drop = True)
+    compiled_final = compiled_df[['Molecule', 'FRET_state', 'FRET_after', 'Time', 'number_of_frames']]
+    compiled_final.columns = ['Molecule', 'FRET_before', 'FRET_after', 'Time', 'number_of_frames']
+    return compiled_final
+
+def remove_outliers(compiled_TDP):
+    outliers = compiled_TDP[(compiled_TDP["FRET_before"] < -0.5)|(compiled_TDP["FRET_before"] > 1.5)|(compiled_TDP["FRET_after"] < -0.5) | (compiled_TDP["FRET_after"] > 1.5)].index
+    compiled_TDP.drop(outliers, inplace = True)
+    return compiled_TDP
+
+def filter_FRET_trans(dfs, thresh):
+    comb = []
+    for Molecule, df in dfs.groupby('Molecule'):
+        df['cum_sum'] = df['time (s)'].cumsum()
+        comb.append(df)
+    combined = pd.concat(comb)
+    return combined[(combined['FRET_before'] < thresh) & (combined['FRET_after'] > thresh)]
+
+
+def select_first_transition(dfs):
+    first_trans = []
+    for molecule, df in dfs.groupby('Molecule'):
+        first_trans_above_thresh = df[df['cum_sum'] == df['cum_sum'].min()]
+        first_trans.append(first_trans_above_thresh)
+    return pd.concat(first_trans)
+
+
+compiled_filt = []
+for treatment, df in compiled_df.groupby('treatment_name'):
+    treatment_df = compiled_df[compiled_df['treatment_name'] == treatment]
+    treatment_df2 = treatment_df.filter(items = ['idealized FRET','molecule_number'])
+    treatment_df3 = calculate_dwell_time(treatment_df2)
+    treatment_transitions = generate_transitions(treatment_df3)
+    treatment_cleaned_transitions = remove_outliers(treatment_transitions)
+    treatment_cleaned_transitions['time (s)'] = treatment_cleaned_transitions['Time'] * exposure
+    treatment_cumsum = filter_FRET_trans(treatment_cleaned_transitions, FRET_thresh)
+    treatment_first_transition = select_first_transition(treatment_cumsum)
+    treatment_first_transition['treatment'] = treatment
+    compiled_filt.append(treatment_first_transition)
+col = pd.concat(compiled_filt)
+
+plot1 = plt.figure()
+sns.set_style('ticks')
+sns.violinplot(data = col, y = 'cum_sum', x = 'treatment', scale = 'width')
+sns.stripplot(data = col, y = 'cum_sum', x = 'treatment', color ='black', alpha = 0.5)
+plot1.savefig(f'{output_folder}/time_until_first_transition_above_thresh.svg', dpi = 600)
+
+
+col.groupby('treatment')['cum_sum'].mean()
 
