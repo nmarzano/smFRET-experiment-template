@@ -157,6 +157,7 @@ plot1 = plt.figure()
 sns.set_style('ticks')
 sns.violinplot(data = col, y = 'cum_sum', x = 'treatment', scale = 'width')
 sns.stripplot(data = col, y = 'cum_sum', x = 'treatment', color ='black', alpha = 0.5)
+plt.ylabel('Time for RNA binding (s)')
 plot1.savefig(f'{output_folder}/time_until_first_transition_above_thresh.svg', dpi = 600)
 
 
