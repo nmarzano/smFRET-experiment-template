@@ -19,11 +19,16 @@ output_folder = 'Experiment_1-description/python_results'
 exposure = 0.200  # in seconds
 frame_rate = 1/exposure
 FRET_thresh = 0.6 #### Used to filt the threshold for transitions
+transition_type = 'high_to_low'   ##### select either 'low_to_high' or 'high_to_low' for plotting first specified transition
 
 
 data_paths = {
     'treatment':('treatment_name', 'Experiment_1-description/raw_data/treatment_to_plot'),
 }
+
+################
+################ Plot heatmaps
+################
 
 def remove_outliers(compiled, plot_type, data_type = "raw"):
     """[removes outliers from dataframe]
@@ -72,6 +77,9 @@ plot_heatmap(compiled_df, 100, 80)
 
 
 
+###############
+############### Generate transitions, filter for the first transition that meets criteria and plot
+###############
 
 def calculate_dwell_time(df):
     """Function to convert raw idealized data to a form in which the duration of each idealized state is calculated
@@ -94,7 +102,6 @@ def calculate_dwell_time(df):
     df_test3.columns = ['FRET_state', 'Time', 'Molecule', 'number_of_frames']
     df_test3 = df_test3.reset_index().drop('idealized FRET', axis = 1)
     return df_test3[df_test3.groupby('Molecule').Molecule.transform('count') > 1]
-
 
 def generate_transitions(df):
     """Converts the duration of each FRET state into a transition, whereby the FRET state before, the FRET state after
@@ -134,13 +141,21 @@ def filter_FRET_trans_if(dfs, thresh, trans_type = 'low_to_high'):
         filt_data = combined[(combined['FRET_before'] < thresh) & (combined['FRET_after'] > thresh)]
     return filt_data
 
-
 def select_first_transition(dfs):
     first_trans = []
     for molecule, df in dfs.groupby('Molecule'):
         first_trans_above_thresh = df[df['cum_sum'] == df['cum_sum'].min()]
         first_trans.append(first_trans_above_thresh)
     return pd.concat(first_trans)
+
+def plot_first_specified_transition(df, trans_type):
+    plot1 = plt.figure()
+    sns.set_style('ticks')
+    sns.violinplot(data = df, y = 'cum_sum', x = 'treatment', scale = 'width')
+    sns.stripplot(data = df, y = 'cum_sum', x = 'treatment', color ='black', alpha = 0.5)
+    plt.ylabel('Time for RNA binding (s)')
+    if trans_type in ['high_to_low', 'low_to_high']:
+        plot1.savefig(f'{output_folder}/time_until_first_{trans_type}_transition.svg', dpi = 600)
 
 
 compiled_filt = []
@@ -151,18 +166,14 @@ for treatment, df in compiled_df.groupby('treatment_name'):
     treatment_transitions = generate_transitions(treatment_df3)
     treatment_cleaned_transitions = remove_outliers(treatment_transitions)
     treatment_cleaned_transitions['time (s)'] = treatment_cleaned_transitions['Time'] * exposure
-    treatment_cumsum = filter_FRET_trans_if(treatment_cleaned_transitions, FRET_thresh) ##### add 'high_to_low' to look at how long it takes for high-low transitions occur
+    treatment_cumsum = filter_FRET_trans_if(treatment_cleaned_transitions, FRET_thresh, transition_type) ##### add 'high_to_low' to look at how long it takes for high-low transitions occur
     treatment_first_transition = select_first_transition(treatment_cumsum)
     treatment_first_transition['treatment'] = treatment
     compiled_filt.append(treatment_first_transition)
 col = pd.concat(compiled_filt)
 
-plot1 = plt.figure()
-sns.set_style('ticks')
-sns.violinplot(data = col, y = 'cum_sum', x = 'treatment', scale = 'width')
-sns.stripplot(data = col, y = 'cum_sum', x = 'treatment', color ='black', alpha = 0.5)
-plt.ylabel('Time for RNA binding (s)')
-plot1.savefig(f'{output_folder}/time_until_first_transition_above_thresh.svg', dpi = 600)
+
+plot_first_specified_transition(col, transition_type)
 
 
 col.groupby('treatment')['cum_sum'].mean()
