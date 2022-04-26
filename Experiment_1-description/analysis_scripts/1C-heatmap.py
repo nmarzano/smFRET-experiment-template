@@ -122,13 +122,20 @@ def remove_outliers(compiled_TDP):
     compiled_TDP.drop(outliers, inplace = True)
     return compiled_TDP
 
-def filter_FRET_trans(dfs, thresh):
+
+def filter_FRET_trans_if(dfs, thresh, trans_type = 'low_to_high'):
     comb = []
     for Molecule, df in dfs.groupby('Molecule'):
         df['cum_sum'] = df['time (s)'].cumsum()
         comb.append(df)
     combined = pd.concat(comb)
-    return combined[(combined['FRET_before'] < thresh) & (combined['FRET_after'] > thresh)]
+    if trans_type == 'high_to_low':
+        filt_data = combined[(combined['FRET_before'] > thresh) & (combined['FRET_after'] < thresh)]
+    elif trans_type == 'low_to_high':
+        filt_data = combined[(combined['FRET_before'] < thresh) & (combined['FRET_after'] > thresh)]
+    return filt_data
+
+
 
 
 def select_first_transition(dfs):
@@ -147,7 +154,7 @@ for treatment, df in compiled_df.groupby('treatment_name'):
     treatment_transitions = generate_transitions(treatment_df3)
     treatment_cleaned_transitions = remove_outliers(treatment_transitions)
     treatment_cleaned_transitions['time (s)'] = treatment_cleaned_transitions['Time'] * exposure
-    treatment_cumsum = filter_FRET_trans(treatment_cleaned_transitions, FRET_thresh)
+    treatment_cumsum = filter_FRET_trans_if(treatment_cleaned_transitions, FRET_thresh) ##### add 'high_to_low' to look at how long it takes for high-low transitions occur
     treatment_first_transition = select_first_transition(treatment_cumsum)
     treatment_first_transition['treatment'] = treatment
     compiled_filt.append(treatment_first_transition)
@@ -162,4 +169,5 @@ plot1.savefig(f'{output_folder}/time_until_first_transition_above_thresh.svg', d
 
 
 col.groupby('treatment')['cum_sum'].mean()
+col.groupby('treatment')['cum_sum'].sem()
 
