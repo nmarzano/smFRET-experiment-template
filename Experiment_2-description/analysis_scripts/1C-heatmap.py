@@ -154,8 +154,7 @@ def plot_first_specified_transition(df, trans_type):
     sns.violinplot(data = df, y = 'cum_sum', x = 'treatment', scale = 'width')
     sns.stripplot(data = df, y = 'cum_sum', x = 'treatment', color ='black', alpha = 0.5)
     plt.ylabel('Time for RNA binding (s)')
-    if trans_type in ['high_to_low', 'low_to_high']:
-        plot1.savefig(f'{output_folder}/time_until_first_{trans_type}_transition.svg', dpi = 600)
+    plot1.savefig(f'{output_folder}/time_until_first_{trans_type}_transition.svg', dpi = 600)
 
 
 compiled_filt = []
