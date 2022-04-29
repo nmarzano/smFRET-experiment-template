@@ -60,8 +60,7 @@ def plot_heatmap(df, gridsize, bins_hex):
         g = sns.JointGrid(data = dfs, x='time', y='FRET', xlim = (0,100), ylim = (0, 1))
         g.plot_joint(plt.hexbin, gridsize=(gridsize, gridsize), cmap='ocean_r', mincnt=0, bins=bins_hex)
         g.plot_marginals(sns.histplot, kde=True, bins=20)
-        identifier = treatment
-        plt.savefig(f'{output_folder}/Heatmap_{identifier}.svg', dpi = 600)
+        plt.savefig(f'{output_folder}/Heatmap_{treatment}.svg', dpi = 600)
         plt.show()
     return
 
