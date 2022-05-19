@@ -65,7 +65,8 @@ data_paths_ridgeline = {
     "12":"label",
 }
 
-pal = sns.color_palette(palette='mako', n_colors=12)
+n_colors = len(data_paths_ridgeline)
+pal = sns.color_palette(palette='mako', n_colors = n_colors)
 matplotlib.rc('font', **font)
 plt.rcParams['svg.fonttype'] = 'none'
 g = sns.FacetGrid(compiled_df, row='treatment_name', hue='treatment_name', aspect=10, height=5, palette=pal)
