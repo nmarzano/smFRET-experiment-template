@@ -9,7 +9,7 @@ import os
 from Utilities.Data_analysis import filter_TDP, file_reader, count_filt_mol
 
 output_folder = 'Experiment_1-description/python_results'
-compiled_data = pd.read_csv(f'{output_folder}/Raw_FRET_histogram_data.csv')
+compiled_data = pd.read_csv(f'{output_folder}/Cleaned_FRET_histogram_data.csv')
 FRET_value = 0.5 #### the proportion of molecules that travel below this threshold will be counted
 
 ################
