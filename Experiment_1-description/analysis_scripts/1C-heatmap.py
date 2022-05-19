@@ -12,14 +12,19 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import glob as glob
+import os as os
 
 from Utilities.Data_analysis import file_reader
 
-output_folder = 'Experiment_1-description/python_results'
+input_folder = 'Experiment_1-description/python_results'
+output_folder = f'{input_folder}/Heatmaps-and-first-transitions'
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
+
 exposure = 0.200  # in seconds
 frame_rate = 1/exposure
-FRET_thresh = 0.6 #### Used to filt the threshold for transitions
-transition_type = 'high_to_low'   ##### select either 'low_to_high' or 'high_to_low' for plotting first specified transition
+FRET_thresh = 0.5 #### Used to filt the threshold for transitions
+transition_type = 'low_to_high'   ##### select either 'low_to_high' or 'high_to_low' for plotting first specified transition
 
 
 data_paths = {
@@ -174,6 +179,6 @@ col = pd.concat(compiled_filt)
 plot_first_specified_transition(col, transition_type)
 
 
-col.groupby('treatment')['cum_sum'].mean()
+print(col.groupby('treatment')['cum_sum'].mean())
 col.groupby('treatment')['cum_sum'].sem()
 
