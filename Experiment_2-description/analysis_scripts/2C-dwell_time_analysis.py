@@ -17,6 +17,7 @@ filename = f'{output_folder}/TDP_cleaned.csv'
 order = ['Native', 'Spontaneous', 'KJ', 'low_GrpE', 'high_GrpE']
 palette = 'mako'
 FRET_thresh = 0.5 #### FRET value at which to filter data above or below. 
+thresh_for_events = 0.5 #### FRET value to threshold for count chaperone events (i.e., binding and unbinding)
 fps = 5  ### frames per second
 thresh = 2 ### should be 10x expsoure if using NL515 smoothing on MASH FRET
 headers = [f"< {FRET_thresh} to < {FRET_thresh}", f"< {FRET_thresh} to > {FRET_thresh}", f"> {FRET_thresh} to > {FRET_thresh}", f"> {FRET_thresh} to < {FRET_thresh}"]
@@ -86,7 +87,6 @@ plot_fret_trans(FRET_value_before_transition, 'before')
 ###############
 ###############  Calculate the number of binding or release events (defined when FRET crosses a FRET threshold) for each molecule then normalise to the lifetime of that molecule to get the rate 
 ###############  Will also plot the data
-thresh = 0.2
 
 def count_chaperone_events(dfs, thresh, fps_clean, thresh_clean):
     """Function to count the number of times that each molecule will go below a defined threshold from above the set threshold 'i.e. chaperone on' and vice versa 'i.e. chaperone off'
@@ -125,7 +125,7 @@ def count_chaperone_events(dfs, thresh, fps_clean, thresh_clean):
     test.fillna(0, inplace = True)
     return test
  
-org_chap_events = count_chaperone_events(dfs = TDP_data, thresh = thresh, fps_clean = fps, thresh_clean = FRET_thresh)
+org_chap_events = count_chaperone_events(dfs = TDP_data, thresh = thresh_for_events, fps_clean = fps, thresh_clean = FRET_thresh)
 org_chap_events['FRET_after_normalised'] = org_chap_events['FRET_after']/org_chap_events['Total Molecule Lifetime (min)']
 org_chap_events['FRET_before_normalised'] = org_chap_events['FRET_before']/org_chap_events['Total Molecule Lifetime (min)']
 org_chap_events['bind_and_release'] = org_chap_events[['FRET_after', 'FRET_before']].min(axis = 1) ### bind and release event defined here as the minimum number of binding or release events
@@ -134,6 +134,7 @@ org_chap_events['bind_and_release_overtime'] = org_chap_events['bind_and_release
 
 
 def plot_binding_release(df, chaperone = 'binding', order = False, palette = 'mako'):
+    # sourcery skip: switch
     """Plots the number or rate of chaperone binding and/or release events per molecule
 
     Args:
