@@ -11,7 +11,7 @@ output_folder = "Experiment_X-description/python_results" #### NEED TO CHANGE EA
 
 FRET_thresh = 0.5 #### FRET value at which to filter data above or below. IF CHANGED, WILL NEED TO CHANGE ALL 0.5 VALUES (E.G. BELOW IN HEADERS) TO THE NEW VALUE
 headers_withsum =  [f"< {FRET_thresh} to < {FRET_thresh}", f"< {FRET_thresh} to > {FRET_thresh}", f"> {FRET_thresh} to > {FRET_thresh}", f"> {FRET_thresh} to < {FRET_thresh}", "sum", "sample"]
-order = [4, 1, 2, 3, 0]  # organise data using its index 
+order = [0, 1, 2, 3, 4]  # organise data using its index 
 
 imported_df = uda.file_reader(f'{output_folder}/Dwell_frequency', 'transition_frequency', False, headers_withsum) ##### NEED TO ALTER EACH TIME
 imported_df.drop(columns = ["sum"], inplace = True)
