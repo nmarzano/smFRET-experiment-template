@@ -20,16 +20,17 @@ input_folder = 'Experiment_1-description/python_results'
 output_folder = f'{input_folder}/Heatmaps-and-first-transitions'
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
-
+    
 exposure = 0.200  # in seconds
 frame_rate = 1/exposure
 FRET_thresh = 0.5 #### Used to filt the threshold for transitions
 transition_type = 'low_to_high'   ##### select either 'low_to_high' or 'high_to_low' for plotting first specified transition
-
+to_filt = ['dataset_to_keep_1', 'dataset_to_keep_2'] ######### select if you want what datasets to include in average heatmap
 
 data_paths = {
-    'treatment':('treatment_name', 'Experiment_1-description/raw_data/treatment_to_plot'),
+    'treatment':('treatment_name', 'Experiment_2-description/raw_data/treatment_to_plot'),
 }
+
 ################
 ################ Plot heatmaps
 ################
@@ -78,7 +79,31 @@ compiled_df = pd.concat(compiled_df)   #### .rename(columns = {1:"test", 3:"test
 compiled_df.columns = ["frames", "donor", "acceptor", "FRET", "idealized FRET", 'molecule_number', 'time', "treatment_name"]
 plot_heatmap(compiled_df, 100, 80)
 
+no_filt = compiled_df['treatment_name'].unique().tolist()
+def plot_average_FRET_over_time(df, filt, ci = 'sd', x = 'time'):
+    """Function to plot the averaged FRET efficiency of a treatment overtime. Have the choice of plotting the standard deviation or standard error.
 
+    Args:
+        df (dataframe): Dataframe of either the compiled_df or dataframe generated after running the normalise_to_event function, which generates the fret on an adjusted x-axis according to the first transition that meets the defined criteria
+        filt (list): Used to filter datasets. If you want to plot certain sets, need to create a list outside the function of the treatment_names in the df you are plotting.
+        ci (str, optional): Confidence interval. Set to either 'sd' or 68 (for standard error). Defaults to 'sd'.
+        x (str, optional): Decide if you want to plot FRET over 'time' or FRET normalised to the first event 'normalised_to_event'. Defaults to 'time'.
+    """
+    fig, ax = plt.subplots()
+    sns.set(style = "white", font_scale = 1.5)
+    filt_data = df[df['treatment_name'].isin(filt)]
+    if x == 'time':
+        sns.lineplot(data=filt_data, x = x, y = 'FRET', ci = ci, hue = 'treatment_name')
+        plt.xlim(0, 200, 10)
+    elif x == 'normalised_to_event':
+        sns.lineplot(data=filt_data, x = x, y = 'FRET', ci = ci, hue = 'treatment_name')
+        plt.xlim(-40, 200, 10)
+    plt.ylim(0, 1, 10)
+    plt.xlabel('Time (s)')
+    plt.legend()
+    plt.savefig(f'{output_folder}/Average_Heatmap_{filt}.svg', dpi = 600)
+    plt.show()
+    return
 
 ###############
 ############### Generate transitions, filter for the first transition that meets criteria and plot
@@ -159,6 +184,13 @@ def plot_first_specified_transition(df, trans_type):
     plt.ylabel('Time for RNA binding (s)')
     plot1.savefig(f'{output_folder}/time_until_first_{trans_type}_transition.svg', dpi = 600)
 
+collated = []
+def normalise_to_event(df1, df2):
+    for (treatment, mol), df in df2.groupby(['treatment', 'Molecule']):
+        testies = df1[(df1['treatment_name'] == treatment) & (df1['molecule_number'] == mol)]
+        testies['normalised_to_event'] = testies['time']-(float(df[(df['Molecule'] == mol) & (df['treatment'] == treatment)]['cum_sum']))
+        collated.append(testies)
+    return pd.concat(collated)
 
 compiled_filt = []
 for treatment, df in compiled_df.groupby('treatment_name'):
@@ -173,11 +205,20 @@ for treatment, df in compiled_df.groupby('treatment_name'):
     treatment_first_transition['treatment'] = treatment
     compiled_filt.append(treatment_first_transition)
 col = pd.concat(compiled_filt)
-
-
-plot_first_specified_transition(col, transition_type)
+normalised_data = normalise_to_event(compiled_df, col)
 
 
 print(col.groupby('treatment')['cum_sum'].mean())
-col.groupby('treatment')['cum_sum'].sem()
+print(col.groupby('treatment')['cum_sum'].sem())
+
+
+
+
+##########
+########## Plot datasets
+##########
+
+plot_first_specified_transition(col, transition_type)
+plot_average_FRET_over_time(compiled_df, no_filt, 'sd', 'time') ##### change to 'to_filt' to include only datasets that were mentioned above
+plot_average_FRET_over_time(normalised_data, to_filt, 'sd', 'normalised_to_event')
 
