@@ -158,6 +158,21 @@ def remove_outliers(compiled_TDP):
     return compiled_TDP
 
 def filter_FRET_trans_if(dfs, thresh, trans_type = 'low_to_high'):
+    """This function has several roles. Firstly, for each molecule in the dataframe it will add a column with the cumulative
+    sum of all residence times that will be used in later functions. Secondly, depending on what kind of transitions
+    you are interested in, it will filter the dataset to include only those transitions (e.g., low to high)
+
+    Args:
+        dfs (dataframe): Dataframe containing the molecules, fret before, fret after, idealized fret, fret and time
+        thresh (value): The FRET value at which to set the transition threshold. Will only find those that are
+        lower than the thresh going to above the thresh (or vice versa)
+        trans_type (str, optional): _description_. Defaults to 'low_to_high'. Dictates if youu want to look at high-to-low
+        or low-to-high transitions. This is set as variable at the top of the script.
+
+    Returns:
+        dataframe: Will return a filtered dataframe with the transitions of interest as well as the cumulative sum of time
+        at which each transition occurs (essentially how long into imaging does the transition appear)
+    """
     comb = []
     for Molecule, df in dfs.groupby('Molecule'):
         df['cum_sum'] = df['time (s)'].cumsum()
@@ -170,6 +185,18 @@ def filter_FRET_trans_if(dfs, thresh, trans_type = 'low_to_high'):
     return filt_data
 
 def select_first_transition(dfs):
+    """Will find the first transition for each molecule. Important to note that this function should be run after the 
+    'filter_FRET_trans_if' function, which filters for only those transitions that meet a criteria. This function 
+    will essentially then find the first transition for a molecule that meets a defined criteria (e.g., first low-to-high 
+    transition)
+
+    Args:
+        dfs (dataframw): Filtered dataframe containing only transitions of interest. Same as that returned after 
+        executing 'filter_FRET_trans_if'
+
+    Returns:
+        dataframe: Dataframe containing the first transition of each molecule and the cumulative time that this occurs.
+    """
     first_trans = []
     for molecule, df in dfs.groupby('Molecule'):
         first_trans_above_thresh = df[df['cum_sum'] == df['cum_sum'].min()]
@@ -186,6 +213,22 @@ def plot_first_specified_transition(df, trans_type):
 
 collated = []
 def normalise_to_event(df1, df2):
+    """ This function uses two dataframes to normalise the x-axis for each molecule so that the first transition
+    that meets a criteria (filtered for and identified using the 'filter_FRET_trans_if' and 'select_first_transition'
+    functions) is set to 0. This should allow the first transition between molecules to be synchronised to potentially
+    observe changes in FRET that occur immediately prior to or after the transition that is normally hidden by
+    the asynchronous timing of transitions between molecules.
+
+    Args:
+        df1 (dataframe): Dataframe that has not been filtered. Contains all transitions for all molecules and treatments
+        df2 (dataframe): Filtered dataframe. Contains only the first transition for each molecule that meets the criteria.
+        Also contains the cumulative sum of time at which that transition occurs, which is then subtracted from all
+        timepoints for the corresponding molecule in df1 
+
+    Returns:
+        dataframe: returns a dataframe that contains all molecules that contain the transition of interest with an extra 
+        column containing the normalised time (time for molecule minus time of first transition)
+    """
     for (treatment, mol), df in df2.groupby(['treatment', 'Molecule']):
         testies = df1[(df1['treatment_name'] == treatment) & (df1['molecule_number'] == mol)]
         testies['normalised_to_event'] = testies['time']-(float(df[(df['Molecule'] == mol) & (df['treatment'] == treatment)]['cum_sum']))
