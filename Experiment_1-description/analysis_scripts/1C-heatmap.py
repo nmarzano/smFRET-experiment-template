@@ -25,7 +25,6 @@ exposure = 0.200  # in seconds
 frame_rate = 1/exposure
 FRET_thresh = 0.5 #### Used to filt the threshold for transitions
 transition_type = 'low_to_high'   ##### select either 'low_to_high' or 'high_to_low' for plotting first specified transition
-to_filt = ['dataset_to_keep_1', 'dataset_to_keep_2'] ######### select if you want what datasets to include in average heatmap
 
 data_paths = {
     'treatment':('treatment_name', 'Experiment_2-description/raw_data/treatment_to_plot'),
@@ -97,7 +96,8 @@ def plot_average_FRET_over_time(df, filt, ci = 'sd', x = 'time'):
         plt.xlim(0, 200, 10)
     elif x == 'normalised_to_event':
         sns.lineplot(data=filt_data, x = x, y = 'FRET', ci = ci, hue = 'treatment_name')
-        plt.xlim(-40, 200, 10)
+        plt.xlim(-100, 100, 10)
+        ax.axvline(x = 0, linestyle = '--', color = 'grey')
     plt.ylim(0, 1, 10)
     plt.xlabel('Time (s)')
     plt.legend()
@@ -199,9 +199,11 @@ def select_first_transition(dfs):
     """
     first_trans = []
     for molecule, df in dfs.groupby('Molecule'):
-        first_trans_above_thresh = df[df['cum_sum'] == df['cum_sum'].min()]
+        all_trans = df[df['cum_sum'] > time_thresh]
+        first_trans_above_thresh = all_trans[all_trans['cum_sum'] == all_trans['cum_sum'].min()]
         first_trans.append(first_trans_above_thresh)
     return pd.concat(first_trans)
+
 
 def plot_first_specified_transition(df, trans_type):
     plot1 = plt.figure()
@@ -250,18 +252,16 @@ for treatment, df in compiled_df.groupby('treatment_name'):
 col = pd.concat(compiled_filt)
 normalised_data = normalise_to_event(compiled_df, col)
 
-
 print(col.groupby('treatment')['cum_sum'].mean())
 print(col.groupby('treatment')['cum_sum'].sem())
-
-
-
 
 ##########
 ########## Plot datasets
 ##########
 
-plot_first_specified_transition(col, transition_type)
-plot_average_FRET_over_time(compiled_df, no_filt, 'sd', 'time') ##### change to 'to_filt' to include only datasets that were mentioned above
-plot_average_FRET_over_time(normalised_data, to_filt, 'sd', 'normalised_to_event')
+to_filt = ['TREATMENT   '] ######### select if you want what datasets to include in average heatmap
 
+
+plot_first_specified_transition(col, transition_type)
+plot_average_FRET_over_time(compiled_df, to_filt, 'sd', 'time') ##### change to 'to_filt' to include only datasets that were mentioned above
+plot_average_FRET_over_time(normalised_data, to_filt, 'sd', 'normalised_to_event')
