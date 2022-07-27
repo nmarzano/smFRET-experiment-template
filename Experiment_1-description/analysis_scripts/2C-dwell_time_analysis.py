@@ -52,32 +52,35 @@ def plot_fret_trans(df, FRET_state = 'after', to_drop = 'none', threshold = Tran
         threshold (_type_, optional): The FRET state that determines the kind of transitions you are looking at. If set to 0.3, and FRET_state is = 'before', this will plot the FRET state before transition to below 0.3 FRET. Defaults to Transition_threshold.
         palette (str, optional): Choose colour scheme to plot. Defaults to 'mako'.
     """
+    sns.set_style("whitegrid", {'grid.linestyle':'--'})
     if to_drop == 'none':
         if FRET_state == 'after':
-            plot1 = plt.figure(figsize = (12, 6))
-            sns.set(style = "darkgrid", font_scale = 1.5)
+            plot1, ax = plt.subplots(figsize = (12, 6))
+            sns.set(style = "ticks", font_scale = 1.5)
             sns.violinplot(data = df, x = 'treatment_name', y = 'FRET_after', palette = palette, order = order)
             sns.stripplot(data = df, x = 'treatment_name', y = 'FRET_after', color='black', alpha = 0.25, order = order)
             plt.ylabel(f'FRET state after transition from < {threshold}')
         elif FRET_state == 'before':
-            plot1 = plt.figure(figsize = (12, 6))
-            sns.set(style = "darkgrid", font_scale = 1.5)
+            plot1, ax = plt.subplots(figsize = (12, 6))
+            sns.set(style = "ticks", font_scale = 1.5)
             sns.violinplot(data = df, x = 'treatment_name', y = 'FRET_before', palette = palette, order = order)
             sns.stripplot(data = df, x = 'treatment_name', y = 'FRET_before', color='black', alpha = 0.25, order = order)
             plt.ylabel(f'FRET state before transition to < {threshold}')
     else:
         dropped = df[~df['treatment_name'].isin(to_drop)].dropna()
-        plot1 = plt.figure(figsize = (12, 6))
-        sns.set(style = "darkgrid", font_scale = 1.5)
+        plot1, ax = plt.subplots(figsize = (12, 6))
+        sns.set(style = "ticks", font_scale = 1.5)
         sns.violinplot(data = dropped, x = 'treatment_name', y = 'FRET_before')
         sns.stripplot(data = dropped, x = 'treatment_name', y = 'FRET_before', color='black', alpha = 0.25)
     plt.rcParams['svg.fonttype'] = 'none'
     plt.xlabel('Treatment')
     plt.ylim(-0.1, 1.2)
     plt.xticks(rotation=45)
+    [x.set_linewidth(2) for x in ax.spines.values()]
+    [x.set_color('black') for x in ax.spines.values()]
     plot1.savefig(f'{plot_folder}/FRET_{FRET_state}_trans_{Transition_threshold}.svg', dpi = 600)
     plt.show()
-
+    
 # FRET_value_after_transition = fret_state_trans(TDP_data, Transition_threshold, fps, FRET_thresh, 'after')
 # plot_fret_trans(FRET_value_after_transition, 'after')
 
@@ -132,7 +135,6 @@ org_chap_events['bind_and_release'] = org_chap_events[['FRET_after', 'FRET_befor
 org_chap_events['bind_and_release_overtime'] = (org_chap_events['bind_and_release']/org_chap_events['Total Molecule Lifetime (min)'])
 org_chap_events['bind_and_release_overtime'] = org_chap_events['bind_and_release_overtime'].replace(0, np.nan)
 
-
 def plot_binding_release(df, chaperone = 'binding', order = False, palette = 'mako'):
     # sourcery skip: switch
     """Plots the number or rate of chaperone binding and/or release events per molecule
@@ -159,16 +161,19 @@ def plot_binding_release(df, chaperone = 'binding', order = False, palette = 'ma
         ycol = 'bind_and_release_overtime'
         ylabel = '# of chaperone binding and release events/molecule/min'
         title = 'chaperone_binding_and_release_events_per_molecule_min'
-    plot1 = plt.figure(figsize = (12, 6))
+    sns.set_style("whitegrid", {'grid.linestyle':'--'})
+    plot1, ax = plt.subplots()
+    sns.set(font_scale = 1.5, style = 'ticks')
     sns.violinplot(data = df, y = ycol, x = 'treatment', cut = 0, order = order, palette = palette)
     sns.stripplot(data = df, y = ycol, x = 'treatment', color='black', alpha = 0.25, order = order)
     plt.xticks(rotation = 45)
+    [x.set_linewidth(2) for x in ax.spines.values()]
+    [x.set_color('black') for x in ax.spines.values()]
     plt.ylabel(f'{ylabel}')
     plot1.savefig(f'{plot_folder}/{title}.svg', dpi = 600)
     plt.show()
 
 plot_binding_release(org_chap_events, 'binding_and_release', order)
-
 #################
 #################   Calculate the mean, sem and N of binding and release events for statistical analysis
 #################
@@ -212,20 +217,22 @@ def find_large_transitions(dfs, delta_thresh):
     return dfs
 
 def plot_large_transitions(df, type = 'transition_prob', palette = 'mako'):
+    sns.set_style("whitegrid", {'grid.linestyle':'--'})
     if type == 'transition_prob': 
         ycol = 'proportion_of_large_transitions'
     if type == 'proportion_of_mol': 
         ycol = 'proportion_mol_large_transition'
-    plot = plt.figure(figsize = (6, 3))
+    plot, ax = plt.subplots(figsize = (6, 3))
     sns.barplot(data = df, 
         y = ycol, 
         x = 'treatment',
         order = order, 
         palette = palette)
     plt.xticks(rotation = 45)
+    [x.set_linewidth(2) for x in ax.spines.values()]
+    [x.set_color('black') for x in ax.spines.values()]
     plot.savefig(f'{plot_folder}/{ycol}.svg', dpi = 600)
     plt.show()
 
 large_transitions_to_plot = find_large_transitions(TDP_data, 0.5)
 plot_large_transitions(large_transitions_to_plot)      ##### 'proportion_of_mol'
-
