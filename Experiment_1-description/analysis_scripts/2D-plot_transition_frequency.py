@@ -30,9 +30,9 @@ hightolow = [i / j * 100 for i,j in zip(imported_df[f'> {FRET_thresh} to < {FRET
 labels = imported_df["sample"].to_list()
 barWidth = 0.85
 plt.rcParams['svg.fonttype'] = 'none'
-sns.set(style = "darkgrid", color_codes = 'pastel')
+sns.set(style = "whitegrid", color_codes = 'pastel')
 # Create green Bars
-plot1 = plt.figure()
+plot1, ax = plt.subplots()
 plt.bar(labels, lowtolow, color='skyblue', edgecolor='white', width=barWidth, label = f"< {FRET_thresh} to < {FRET_thresh}" )
 # Create orange Bars
 plt.bar(labels, lowtohigh, bottom=lowtolow, color='royalblue', edgecolor='white', width=barWidth, label = f"< {FRET_thresh} to > {FRET_thresh}")
@@ -43,7 +43,10 @@ plt.bar(labels, hightolow, bottom=[i+j+k for i,j,k in zip(lowtolow, lowtohigh, h
 plt.legend(loc = "upper left", bbox_to_anchor = (1,1), ncol =1)
 plt.ylabel("Transition probability (%)")
 plt.xticks(rotation=45)
+[x.set_linewidth(2) for x in ax.spines.values()]
+[x.set_color('black') for x in ax.spines.values()]
 plot1.savefig(f'{output_folder}/Transition_frequency_plot.svg', dpi = 600)
+
 
 
 
