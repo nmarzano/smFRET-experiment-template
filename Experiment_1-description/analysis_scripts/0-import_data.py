@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import shutil
 import os
+import glob
 
 output_folder = "Experiment_X-description/raw_data/"  ### Change for each experiment
 
