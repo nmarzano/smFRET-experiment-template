@@ -24,7 +24,8 @@ if not os.path.exists(output_folder):
 exposure = 0.200  # in seconds
 frame_rate = 1/exposure
 FRET_thresh = 0.5 #### Used to filt the threshold for transitions
-transition_type = 'low_to_high'   ##### select either 'low_to_high' or 'high_to_low' for plotting first specified transition
+transition_type = 'high_to_low'   ##### select either 'low_to_high' or 'high_to_low' for plotting first specified transition
+time_thresh  = 15 #### in seconds
 
 data_paths = {
     'treatment':('treatment_name', 'Experiment_2-description/raw_data/treatment_to_plot'),
@@ -184,7 +185,7 @@ def filter_FRET_trans_if(dfs, thresh, trans_type = 'low_to_high'):
         filt_data = combined[(combined['FRET_before'] < thresh) & (combined['FRET_after'] > thresh)]
     return filt_data
 
-def select_first_transition(dfs):
+def select_first_transition(dfs, time_thresh):
     """Will find the first transition for each molecule. Important to note that this function should be run after the 
     'filter_FRET_trans_if' function, which filters for only those transitions that meet a criteria. This function 
     will essentially then find the first transition for a molecule that meets a defined criteria (e.g., first low-to-high 
@@ -199,10 +200,12 @@ def select_first_transition(dfs):
     """
     first_trans = []
     for molecule, df in dfs.groupby('Molecule'):
-        all_trans = df[df['cum_sum'] > time_thresh]
-        first_trans_above_thresh = all_trans[all_trans['cum_sum'] == all_trans['cum_sum'].min()]
-        first_trans.append(first_trans_above_thresh)
+        if df['cum_sum'].min() < time_thresh:
+            continue
+        first_trans_above_timethresh = df[df['cum_sum'] == df['cum_sum'].min()]
+        first_trans.append(first_trans_above_timethresh) 
     return pd.concat(first_trans)
+
 
 
 def plot_first_specified_transition(df, trans_type):
@@ -232,9 +235,9 @@ def normalise_to_event(df1, df2):
         column containing the normalised time (time for molecule minus time of first transition)
     """
     for (treatment, mol), df in df2.groupby(['treatment', 'Molecule']):
-        testies = df1[(df1['treatment_name'] == treatment) & (df1['molecule_number'] == mol)]
-        testies['normalised_to_event'] = testies['time']-(float(df[(df['Molecule'] == mol) & (df['treatment'] == treatment)]['cum_sum']))
-        collated.append(testies)
+        data = df1[(df1['treatment_name'] == treatment) & (df1['molecule_number'] == mol)]
+        data['normalised_to_event'] = data['time']-(float(df[(df['Molecule'] == mol) & (df['treatment'] == treatment)]['cum_sum']))
+        collated.append(data)
     return pd.concat(collated)
 
 compiled_filt = []
@@ -246,11 +249,15 @@ for treatment, df in compiled_df.groupby('treatment_name'):
     treatment_cleaned_transitions = remove_outliers(treatment_transitions)
     treatment_cleaned_transitions['time (s)'] = treatment_cleaned_transitions['Time'] * exposure
     treatment_cumsum = filter_FRET_trans_if(treatment_cleaned_transitions, FRET_thresh, transition_type) ##### add 'high_to_low' to look at how long it takes for high-low transitions occur
-    treatment_first_transition = select_first_transition(treatment_cumsum)
+    treatment_first_transition = select_first_transition(treatment_cumsum, time_thresh)
     treatment_first_transition['treatment'] = treatment
     compiled_filt.append(treatment_first_transition)
 col = pd.concat(compiled_filt)
-normalised_data = normalise_to_event(compiled_df, col)
+
+final_df = pd.merge(compiled_df, col[['Molecule', 'treatment', 'cum_sum']].rename(columns = {'treatment':'treatment_name', 'Molecule':'molecule_number'}), on = ['molecule_number', 'treatment_name'], how = 'outer')
+
+final_df['normalised'] = final_df['time'] - final_df['cum_sum']
+normalised_data = normalise_to_event(final_df, col)
 
 print(col.groupby('treatment')['cum_sum'].mean())
 print(col.groupby('treatment')['cum_sum'].sem())
@@ -259,9 +266,9 @@ print(col.groupby('treatment')['cum_sum'].sem())
 ########## Plot datasets
 ##########
 
-to_filt = ['TREATMENT   '] ######### select if you want what datasets to include in average heatmap
+to_filt = ['TREATMENT'] ######### select if you want what datasets to include in average heatmap
 
 
 plot_first_specified_transition(col, transition_type)
-plot_average_FRET_over_time(compiled_df, to_filt, 'sd', 'time') ##### change to 'to_filt' to include only datasets that were mentioned above
+plot_average_FRET_over_time(final_df, to_filt, 'sd', 'time') ##### change to 'to_filt' to include only datasets that were mentioned above
 plot_average_FRET_over_time(normalised_data, to_filt, 'sd', 'normalised_to_event')
