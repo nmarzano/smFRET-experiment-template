@@ -257,7 +257,7 @@ plt.rc('font', **font)
 plt.rcParams['svg.fonttype'] = 'none'
 
 fig, ax = plt.subplots()
-sns.set(style = 'whitegrid', font_scale = 1.5)
+sns.set_style('whitegrid', {'font_scale':1.5, 'grid.linestyle':'--'})
 plot_parameters_scattbar(final, 'transition_type', x_order, 'y_axis', 'treatment', order, show_bars = True, err_type = 'sem', colors = palette, ax = ax)
 plt.ylim(0, 50)
 plt.ylabel('Transition class')
@@ -266,3 +266,4 @@ plt.xticks(rotation = 45)
 [x.set_color('black') for x in ax.spines.values()]
 fig.savefig(f'{output_folder}/mean_residence_withSEM.svg', dpi = 600)
 plt.show()
+

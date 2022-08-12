@@ -45,8 +45,8 @@ plt.ylabel("Transition probability (%)")
 plt.xticks(rotation=45)
 [x.set_linewidth(2) for x in ax.spines.values()]
 [x.set_color('black') for x in ax.spines.values()]
-plot1.savefig(f'{output_folder}/Transition_frequency_plot.svg', dpi = 600)
 
+plot1.savefig(f'{output_folder}/Transition_frequency_plot.svg', dpi = 600)
 
 
 
