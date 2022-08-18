@@ -245,7 +245,7 @@ def plot_first_specified_transition(df, trans_type):
     plt.ylabel('Time for RNA binding (s)')
     plot1.savefig(f'{output_folder}/time_until_first_{trans_type}_transition.svg', dpi = 600)
 
-collated = []
+
 def normalise_to_event(df1, df2):
     """ This function uses two dataframes to normalise the x-axis for each molecule so that the first transition
     that meets a criteria (filtered for and identified using the 'filter_FRET_trans_if' and 'select_first_transition'
@@ -263,11 +263,16 @@ def normalise_to_event(df1, df2):
         dataframe: returns a dataframe that contains all molecules that contain the transition of interest with an extra 
         column containing the normalised time (time for molecule minus time of first transition)
     """
+    collated = []
     for (treatment, mol), df in df2.groupby(['treatment', 'Molecule']):
-        data = df1[(df1['treatment_name'] == treatment) & (df1['molecule_number'] == mol)]
-        data['normalised_to_event'] = data['time']-(float(df[(df['Molecule'] == mol) & (df['treatment'] == treatment)]['cum_sum']))
-        collated.append(data)
+        testies = df1[(df1['treatment_name'] == treatment) & (df1['molecule_number'] == mol)]
+        testies['normalised_to_event'] = testies['time']-(float(df[(df['Molecule'] == mol) & (df['treatment'] == treatment)]['cum_sum']))
+        if transition_type == 'low_to_high' and testies['idealized FRET'].iloc[0] <= FRET_thresh:
+            collated.append(testies)
+        elif transition_type == 'high_to_low' and testies['idealized FRET'].iloc[0] >= FRET_thresh:
+            collated.append(testies)
     return pd.concat(collated)
+
 
 compiled_filt = []
 for treatment, df in compiled_df.groupby('treatment_name'):
@@ -282,11 +287,9 @@ for treatment, df in compiled_df.groupby('treatment_name'):
     treatment_first_transition['treatment'] = treatment
     compiled_filt.append(treatment_first_transition)
 col = pd.concat(compiled_filt)
+normalised_data = normalise_to_event(compiled_df, col)
 
-final_df = pd.merge(compiled_df, col[['Molecule', 'treatment', 'cum_sum']].rename(columns = {'treatment':'treatment_name', 'Molecule':'molecule_number'}), on = ['molecule_number', 'treatment_name'], how = 'outer')
-
-final_df['normalised'] = final_df['time'] - final_df['cum_sum']
-normalised_data = normalise_to_event(final_df, col)
+plot_first_specified_transition(col, transition_type)
 
 print(col.groupby('treatment')['cum_sum'].mean())
 print(col.groupby('treatment')['cum_sum'].sem())
@@ -299,5 +302,5 @@ to_filt = ['TREATMENT'] ######### select if you want what datasets to include in
 
 
 plot_first_specified_transition(col, transition_type)
-plot_average_FRET_over_time(final_df, to_filt, 'sd', 'time') ##### change to 'to_filt' to include only datasets that were mentioned above
+plot_average_FRET_over_time(normalised_data, to_filt, 'sd', 'time') ##### change to 'to_filt' to include only datasets that were mentioned above
 plot_average_FRET_over_time(normalised_data, to_filt, 'sd', 'normalised_to_event', False)  #### add True to plot subplots
