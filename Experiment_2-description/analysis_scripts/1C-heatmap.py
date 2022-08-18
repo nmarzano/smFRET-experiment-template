@@ -58,16 +58,26 @@ def remove_outliers(compiled, plot_type, data_type = "raw"):
     else:
         print('invalid plot type, please set plot_type as "hist" or "TDP" - you idiot')
 
-def plot_heatmap(df, gridsize, bins_hex):
+def plot_heatmap(df, gridsize, bins_hex, plot_type = 'hex'):
     for treatment, dfs in df.groupby('treatment_name'):
-        plt.rcParams['svg.fonttype'] = 'none'
-        sns.set(style="whitegrid")
-        g = sns.JointGrid(data = dfs, x='time', y='FRET', xlim = (0,100), ylim = (0, 1))
-        g.plot_joint(plt.hexbin, gridsize=(gridsize, gridsize), cmap='ocean_r', mincnt=0, bins=bins_hex)
-        g.plot_marginals(sns.histplot, kde=True, bins=20)
-        plt.savefig(f'{output_folder}/Heatmap_{treatment}.svg', dpi = 600)
+        if plot_type == 'hex':
+            plt.rcParams['svg.fonttype'] = 'none'
+            sns.set(style="whitegrid")
+            g = sns.JointGrid(data = dfs, x='time', y='FRET', xlim = (0,100), ylim = (0, 1))
+            g.plot_joint(plt.hexbin, gridsize=(gridsize, gridsize), cmap='ocean_r', mincnt=0, bins=bins_hex)
+            g.plot_marginals(sns.histplot, kde=True, bins=20)
+            plt.savefig(f'{output_folder}/Heatmap_{treatment}_{plot_type}.svg', dpi = 600)
+        if plot_type == 'kde':
+            plt.rcParams['svg.fonttype'] = 'none'
+            sns.set(style="whitegrid")
+            g = sns.JointGrid(data = dfs, x='time', y='FRET', xlim = (0,200), ylim = (0, 1))
+            g.plot_joint(sns.kdeplot, cmap='mako_r', mincnt=0, linewidth = 30)
+            g.plot_joint(sns.scatterplot, color = 'skyblue', alpha = 0.1)
+            g.plot_marginals(sns.histplot, kde=True, bins=20)
+            plt.savefig(f'{output_folder}/Heatmap_{treatment}_{plot_type}.svg', dpi = 600)
         plt.show()
     return
+
 
 compiled_df = []
 for data_name, (label, data_path) in data_paths.items():
@@ -77,35 +87,54 @@ for data_name, (label, data_path) in data_paths.items():
     compiled_df.append(cleaned_raw)
 compiled_df = pd.concat(compiled_df)   #### .rename(columns = {1:"test", 3:"test2"}) ## can rename individually if needed
 compiled_df.columns = ["frames", "donor", "acceptor", "FRET", "idealized FRET", 'molecule_number', 'time', "treatment_name"]
-plot_heatmap(compiled_df, 100, 80)
+
+plot_heatmap(compiled_df, 100, 80, 'kde')
+
 
 no_filt = compiled_df['treatment_name'].unique().tolist()
-def plot_average_FRET_over_time(df, filt, ci = 'sd', x = 'time'):
-    """Function to plot the averaged FRET efficiency of a treatment overtime. Have the choice of plotting the standard deviation or standard error.
 
-    Args:
-        df (dataframe): Dataframe of either the compiled_df or dataframe generated after running the normalise_to_event function, which generates the fret on an adjusted x-axis according to the first transition that meets the defined criteria
-        filt (list): Used to filter datasets. If you want to plot certain sets, need to create a list outside the function of the treatment_names in the df you are plotting.
-        ci (str, optional): Confidence interval. Set to either 'sd' or 68 (for standard error). Defaults to 'sd'.
-        x (str, optional): Decide if you want to plot FRET over 'time' or FRET normalised to the first event 'normalised_to_event'. Defaults to 'time'.
-    """
-    fig, ax = plt.subplots()
-    sns.set(style = "white", font_scale = 1.5)
+def plot_average_FRET_over_time(df, filt, ci = 'sd', x_axis = 'time', subplot = False):
+    sns.set(style = "ticks", font_scale = 1.5)
     filt_data = df[df['treatment_name'].isin(filt)]
-    if x == 'time':
-        sns.lineplot(data=filt_data, x = x, y = 'FRET', ci = ci, hue = 'treatment_name')
+    if x_axis == 'time':
+        fig, ax = plt.subplots()
+        sns.lineplot(data=filt_data, x = x_axis, y = 'FRET', ci = ci, hue = 'treatment_name')
         plt.xlim(0, 200, 10)
-    elif x == 'normalised_to_event':
-        sns.lineplot(data=filt_data, x = x, y = 'FRET', ci = ci, hue = 'treatment_name')
-        plt.xlim(-100, 100, 10)
-        ax.axvline(x = 0, linestyle = '--', color = 'grey')
-    plt.ylim(0, 1, 10)
-    plt.xlabel('Time (s)')
-    plt.legend()
-    plt.savefig(f'{output_folder}/Average_Heatmap_{filt}.svg', dpi = 600)
+        ax.axvline(x = 10, linestyle = '-', color = 'grey')
+        ax.axvspan(0, 10, facecolor='grey', alpha = .2)   
+        plt.ylim(0, 1, 10)
+        plt.xlabel('Time (s)')
+        plt.legend(fontsize = 'small')
+        plt.savefig(f'{output_folder}/Average_Heatmap_{filt}.svg', dpi = 600)
+    if (x_axis == 'normalised_to_event' and subplot == True):
+        nrow = math.ceil(len(filt)/2)
+        fig, axes = plt.subplots(nrow, 2, figsize = (8, 3*nrow), sharex = True, sharey = True)
+        axes = axes.flatten()
+        for i, treatment in enumerate(filt):
+            sns.lineplot(data=df[df['treatment_name'] == treatment], x = x_axis, y = 'FRET', ci = ci, hue = 'treatment_name', ax = axes[i])
+            axes[i].axvline(x = 0, linestyle = '--', color = 'grey')
+            plt.xlim(-30, 30, 10)
+            plt.ylim(0, 1, 10)
+            axes[i].set_xlabel('Time (s)')
+            axes[i].set_title(f"{treatment} (n = {str(normalised_data[normalised_data['treatment_name'] == treatment]['molecule_number'].nunique())})")
+            axes[i].get_legend().remove()
+        if len(filt) < len(axes):
+            axes[-1].remove()
+            axes[3].set_xlabel('Time (s)')
+        plt.savefig(f'{output_folder}/Traces_normalised_to_first_trans.svg', dpi = 600)
+        plt.show()
+    elif x_axis == 'normalised_to_event':
+        for treatment, df in filt_data.groupby('treatment_name'):
+            sns.lineplot(data=df[df['treatment_name'] == treatment], x = x_axis, y = 'FRET', ci = ci, hue = 'treatment_name')
+            plt.xlim(-30, 30, 10)
+            plt.axvline(x = 0, linestyle = '--', color = 'grey')
+            plt.ylim(0, 1, 10)
+            plt.xlabel('Time (s)')
+            plt.legend(fontsize = 'small', loc = 'upper left')
+            plt.savefig(f'{output_folder}/Traces_normalised_to_first_trans_{treatment}.svg', dpi = 600)
+            plt.show()
     plt.show()
     return
-
 ###############
 ############### Generate transitions, filter for the first transition that meets criteria and plot
 ###############
@@ -271,4 +300,4 @@ to_filt = ['TREATMENT'] ######### select if you want what datasets to include in
 
 plot_first_specified_transition(col, transition_type)
 plot_average_FRET_over_time(final_df, to_filt, 'sd', 'time') ##### change to 'to_filt' to include only datasets that were mentioned above
-plot_average_FRET_over_time(normalised_data, to_filt, 'sd', 'normalised_to_event')
+plot_average_FRET_over_time(normalised_data, to_filt, 'sd', 'normalised_to_event', False)  #### add True to plot subplots
