@@ -13,6 +13,7 @@ import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import glob as glob
 import os as os
+import math 
 
 from Utilities.Data_analysis import file_reader
 
@@ -69,11 +70,17 @@ def plot_heatmap(df, gridsize, bins_hex, plot_type = 'hex'):
             plt.savefig(f'{output_folder}/Heatmap_{treatment}_{plot_type}.svg', dpi = 600)
         if plot_type == 'kde':
             plt.rcParams['svg.fonttype'] = 'none'
-            sns.set(style="whitegrid")
-            g = sns.JointGrid(data = dfs, x='time', y='FRET', xlim = (0,200), ylim = (0, 1))
-            g.plot_joint(sns.kdeplot, cmap='mako_r', mincnt=0, linewidth = 30)
-            g.plot_joint(sns.scatterplot, color = 'skyblue', alpha = 0.1)
-            g.plot_marginals(sns.histplot, kde=True, bins=20)
+            sns.set_style("whitegrid", {'grid.linestyle':'--', 'axes.linewidth':20, 'axes.color':'black', 'axes.edgecolor': 'black', 'font.size':10})
+            fig = sns.jointplot(data = dfs, x='time', y='FRET', xlim = (0,200), ylim = (0, 1), alpha = 0.05, color = '#2AA6CF', marginal_kws = dict(bins = 20, kde = True))   
+            fig.plot_joint(sns.kdeplot, cmap = 'mako') 
+            fig.ax_joint.spines['top'].set_visible(True)
+            fig.ax_joint.spines['right'].set_visible(True)
+            fig.ax_marg_x.spines['left'].set_visible(True)
+            fig.ax_marg_x.spines['top'].set_visible(True)
+            fig.ax_marg_x.spines['right'].set_visible(True)
+            fig.ax_marg_y.spines['top'].set_visible(True)
+            fig.ax_marg_y.spines['right'].set_visible(True)
+            fig.ax_marg_y.spines['bottom'].set_visible(True)
             plt.savefig(f'{output_folder}/Heatmap_{treatment}_{plot_type}.svg', dpi = 600)
         plt.show()
     return
