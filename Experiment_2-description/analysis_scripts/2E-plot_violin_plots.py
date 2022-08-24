@@ -267,3 +267,40 @@ plt.xticks(rotation = 45)
 fig.savefig(f'{output_folder}/mean_residence_withSEM.svg', dpi = 600)
 plt.show()
 
+
+def plot_residence_time_of_class(df, plot_type = 'KDE'):
+    if plot_type == 'KDE':
+        for transition, dfs in df.groupby('transition_type'):
+            filt_trans = dfs[dfs['transition_type'] ==  transition]
+            sns.kdeplot(data = filt_trans, x = 'y_axis', hue = 'treatment', fill = False,  log_scale = True, common_norm=False, palette = 'mako')
+            plt.title(transition)
+            plt.show()
+    if plot_type == 'linear':
+        fig, axes = plt.subplots(4, 1, figsize = (8, 18), sharex=True)
+        axes = axes.flatten()
+        for i, treatment in enumerate(list(df['treatment'].unique())):
+            sns.histplot(data = df[df['treatment']== treatment], x = 'y_axis', binwidth = 5, kde = True, stat = 'density', log_scale = False, ax = axes[i])
+            axes[i].set_xlabel("Residence time before transition to 'bound' state (s)")
+            axes[i].set_title(treatment)
+            fig.savefig(f'{output_folder}/normal_scale.svg', dpi = 600)
+    if plot_type == 'log':
+        fig, axes = plt.subplots(4, 1, figsize = (8, 18), sharex=True)
+        axes = axes.flatten()
+        for i, treatment in enumerate(list(df['treatment'].unique())):
+            plot1 = sns.histplot(data = df[df['treatment']== treatment], x = 'y_axis', binwidth = 0.2, kde = True, stat = 'density', log_scale = True, ax = axes[i])
+            axes[i].set_xlabel("Residence time before transition to 'bound' state (s)")
+            axes[i].set_title(treatment)
+            fig.savefig(f'{output_folder}/log_scale.svg', dpi = 600)
+    plt.show
+
+plot_residence_time_of_class(final, 'KDE')
+
+fig, axes = plt.subplots(2,2, sharex = True, sharey = True)
+sns.set_style("whitegrid", {'grid.linestyle':'--', 'font_scale':1.5} )
+axes = axes.flatten()
+for i, transition in enumerate(list(final['transition_type'].unique())):
+    sns.kdeplot(data = final[final['transition_type'] == transition], x = 'y_axis', hue = 'treatment', fill = False,  log_scale = True, common_norm=False, ax = axes[i], legend = False, palette = 'mako')
+    axes[i].set_title(f'{transition}', {'fontsize':12})
+plt.tight_layout()
+plt.show()
+
