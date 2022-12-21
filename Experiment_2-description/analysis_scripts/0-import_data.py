@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import shutil
 import os
+import glob
 
 output_folder = "Experiment_X-description/raw_data/"  ### Change for each experiment
 
@@ -24,3 +25,4 @@ def move_folders(input_folders, filetype, output_folder):
         for filename in filelist:
             shutil.copyfile(f"{folder}{filename}", f"{output_folder}{new_folder}/{filename}")        # if need to change filenames could have a function defined above that changes it
 move_folders(input_folders, ".dat", output_folder)
+

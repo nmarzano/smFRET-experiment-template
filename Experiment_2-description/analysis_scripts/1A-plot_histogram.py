@@ -66,7 +66,7 @@ data_paths_ridgeline = {
 }
 
 n_colors = len(data_paths_ridgeline)
-pal = sns.color_palette(palette='mako', n_colors = n_colors)
+pal = sns.color_palette(palette='mako', n_colors=n_colors)
 matplotlib.rc('font', **font)
 plt.rcParams['svg.fonttype'] = 'none'
 g = sns.FacetGrid(compiled_df, row='treatment_name', hue='treatment_name', aspect=10, height=5, palette=pal)
@@ -149,6 +149,4 @@ def plot_hist_type(df, order, kind = 'kde'):
 
 
 plot_hist_type(compiled_df, order, 'kde')
-
-
 

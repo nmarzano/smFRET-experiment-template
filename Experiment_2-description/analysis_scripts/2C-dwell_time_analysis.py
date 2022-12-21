@@ -80,7 +80,7 @@ def plot_fret_trans(df, FRET_state = 'after', to_drop = 'none', threshold = Tran
     [x.set_color('black') for x in ax.spines.values()]
     plot1.savefig(f'{plot_folder}/FRET_{FRET_state}_trans_{Transition_threshold}.svg', dpi = 600)
     plt.show()
-
+    
 # FRET_value_after_transition = fret_state_trans(TDP_data, Transition_threshold, fps, FRET_thresh, 'after')
 # plot_fret_trans(FRET_value_after_transition, 'after')
 
@@ -236,4 +236,3 @@ def plot_large_transitions(df, type = 'transition_prob', palette = 'mako'):
 
 large_transitions_to_plot = find_large_transitions(TDP_data, 0.5)
 plot_large_transitions(large_transitions_to_plot)      ##### 'proportion_of_mol'
-
