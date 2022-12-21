@@ -30,7 +30,7 @@ hightolow = [i / j * 100 for i,j in zip(imported_df[f'> {FRET_thresh} to < {FRET
 labels = imported_df["sample"].to_list()
 barWidth = 0.85
 plt.rcParams['svg.fonttype'] = 'none'
-sns.set(style = "whitegrid", color_codes = 'pastel')
+sns.set(style = "ticks", color_codes = 'pastel')
 # Create green Bars
 plot1, ax = plt.subplots()
 plt.bar(labels, lowtolow, color='skyblue', edgecolor='white', width=barWidth, label = f"< {FRET_thresh} to < {FRET_thresh}" )
