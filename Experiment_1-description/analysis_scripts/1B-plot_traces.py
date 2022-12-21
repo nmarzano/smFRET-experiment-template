@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Aug 19 10:40:54 2020
-
-@author: paudel
-"""
-
-
 from scipy.stats import norm
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -31,6 +23,8 @@ exposure = 0.2  ### exposure in seconds
 
 ##############
 ############## Code to import data and concatenate all molecule data for sequential plotting
+##############
+
 def load_data(filename):
     trace_df = pd.DataFrame(np.loadtxt(filename))
     trace_df.columns = ["frames", "donor", "acceptor", "FRET", "idealized FRET"]
@@ -49,6 +43,8 @@ compiled_df = pd.concat(compiled_df)   #### .rename(columns = {1:"test", 3:"test
 
 ############
 ############ Code to plot FRET and/or intensity traces
+############
+
 def plot_intensity(treatment):
     plt.rcParams['svg.fonttype'] = 'none'
     sns.set_style("whitegrid", {'grid.linestyle':'--'})
@@ -79,10 +75,28 @@ def plot_FRET(treatment):
     plt.show()
     return plot2
 
+def plot_both(df):
+    fig, ax = plt.subplots(2, 1, sharex = True)
+    sns.set(style = 'ticks', font_scale = 1)
+    sns.lineplot(x = df["Time"], y = df["smoothed_FRET"], color = 'black', ax = ax[1])
+    sns.lineplot(x = df["Time"], y = df["idealized FRET"], color = 'darkorange', ax = ax[1])
+    sns.lineplot(x = df["Time"], y = df["donor"], color = 'green', ax = ax[0])
+    sns.lineplot(x = df["Time"], y = df["acceptor"], color = 'purple', ax = ax[0])
+    plt.xlim(0, 200)
+    ax[1].set_ylabel('FRET')
+    ax[0].set_ylabel('Intensity (a.u.)')
+    ax[1].set_xlabel('Time (s)')
+    ax[1].set_ylim(0, 1)
+    plt.tight_layout()
+    plt.show()
+    return fig
+
 for data_name, data_path in data_paths.items():
     treatment = compiled_df[compiled_df["treatment_name"] == data_name]
-    mol_ident = data_path.split('/')[-1]
+    mol_ident = data_path.split('/')[-1].split('_')[0]
+    plot_both(treatment).savefig(f'{output_folder}/{data_name}_Trace_{mol_ident}_both.svg', dpi = 600)
     plot_FRET(treatment).savefig(f'{output_folder}/{data_name}_Trace_{mol_ident}.svg', dpi = 600)
     plot_intensity(treatment).savefig(f'{output_folder}/{data_name}_Trace_{mol_ident}_intensity.svg', dpi = 600)
+
 
 
