@@ -77,16 +77,27 @@ colors_violin = {
 }
 
 
+dict_for_label = {
+f"< {FRET_thresh} to < {FRET_thresh}":'$T_{low-low}$', 
+f"< {FRET_thresh} to > {FRET_thresh}":'$T_{low-high}$',
+f"> {FRET_thresh} to > {FRET_thresh}":'$T_{high-high}$',
+f"> {FRET_thresh} to < {FRET_thresh}":'$T_{high-low}$'
+}
+
+
+final['transition_name'] = final['transition_type'].map(dict_for_label)
+
+
 def plot_violin(data, scale = "y_axis"):
     if scale == "y_axis":
         plt.rcParams['svg.fonttype'] = 'none'
-        plot1 = plt.figure(figsize = (12, 6))
-        sns.set(style = "darkgrid", font_scale = 1.5)
+        plot1 = plt.figure()
+        sns.set(style = "ticks", font_scale = 1)
         sns.violinplot(
             data=data, 
-            x= "transition_type", 
+            x= "transition_name", 
             y = "y_axis",
-            palette= colors_violin, 
+            palette= 'mako', 
             hue = "treatment", 
             log_scale = True,
             cut = 0)
@@ -97,13 +108,13 @@ def plot_violin(data, scale = "y_axis"):
         plt.show()
     if scale == "y_axis_log10":
         plt.rcParams['svg.fonttype'] = 'none'
-        plot2 = plt.figure(figsize = (12, 6))
-        sns.set(style = "darkgrid", font_scale = 1.5)
+        plot2 = plt.figure()
+        sns.set(style = "ticks", font_scale = 1)
         sns.violinplot(
             data=data, 
-            x= "transition_type", 
+            x= "transition_name", 
             y = "y_axis_log10",
-            palette= colors_violin, 
+            palette= 'mako', 
             hue = "treatment", 
             log_scale = True)
         plt.ylabel("Log residence time (s)")
@@ -113,12 +124,13 @@ def plot_violin(data, scale = "y_axis"):
         plt.show()
     if scale == 'split':     
         f, (ax_top, ax_bottom) = plt.subplots(ncols=1, nrows=2, sharex=True, gridspec_kw={'hspace':0.05})
-        sns.violinplot(x="transition_type", y="y_axis", hue="treatment",data=final, ax=ax_top, palette = 'mako')
-        sns.violinplot(x="transition_type", y="y_axis", hue="treatment",data=final, ax=ax_bottom, cut = 0, palette = 'mako')
+        sns.set(style = 'ticks')
+        sns.violinplot(x="transition_name", y="y_axis", hue="treatment",data=data, ax=ax_top, palette = 'mako')
+        sns.violinplot(x="transition_name", y="y_axis", hue="treatment",data=data, ax=ax_bottom, cut = 0, palette = 'mako')
         ax_top.set_ylim(bottom=40)   # those limits are fake
         ax_bottom.set_ylim(0,40)
-        sns.despine(ax=ax_bottom)
-        sns.despine(ax=ax_top, bottom=True)
+        # sns.despine(ax=ax_bottom)
+        # sns.despine(ax=ax_top, bottom=True)
         ax = ax_top
         d = .015  # how big to make the diagonal lines in axes coordinates
         # arguments to pass to plot, just so we don't keep repeating them
@@ -129,16 +141,22 @@ def plot_violin(data, scale = "y_axis"):
         ax2.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
         #remove one of the legend
         ax_bottom.legend_.remove()
+        ax_top.set_xlabel('')
+        plt.xlabel('')
+        ax_top.tick_params(bottom = False)
+        ax_top.set_ylabel('')
+        ax_bottom.set_ylabel('')
+        f.text(0.04, 0.5, 'Residence time (s)', ha='center', va='center', rotation='vertical')
         f.savefig(f"{output_folder}/Violin_plot_splitaxis.svg", dpi = 600)
         plt.show()
 
 plot_violin(final, 'split')
 
-
 ############# Code to generate and collate summary statistics of dwell times
 mean = final.groupby(['treatment', 'transition_type']).mean()
 sem =  final.groupby(['treatment', 'transition_type']).sem()
-N = final.groupby(['treatment', 'transition_type']).count()
+final_drop = final.drop('transition_name', axis = 1)
+N = final_drop.groupby(['treatment', 'transition_type']).count()
 collated = pd.concat([mean,sem, N], axis = 1)
 collated.drop([col for col in collated.columns.tolist() if 'y_axis_log10' in col], axis = 1, inplace = True)
 collated.columns = ['mean_residence_time', 'sem', 'n']
@@ -146,126 +164,27 @@ collated.reset_index(inplace = True)
 collated.to_csv(f"{output_folder}/summary.csv", index = False)
 
 
-### code to plot with SEM
-def get_cmap(n, name='hsv'):
-    '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct 
-    RGB color; the keyword argument name must be a standard mpl colormap name.'''
-    return plt.cm.get_cmap(name, n)
 
-def plot_parameters_scattbar(df, x_col, x_order, y_col, hue_col, hue_order, show_bars=False, ax=False, alpha=1, err_type='std', colors=False, scat_alpha = 0):
-    """Master plotting function to generate improved 'scatterbar' plots, with bar versus mean line option.
+def plot_bar_with_sem(df, summary_df, palette = 'mako', order = order):
+    ###### prepare order of datasets so that sem are correctly mapped onto the correct dataset
+    list_to_order = list(np.arange(0, len(order), 1))
+    dict_to_order = dict(zip(order, list_to_order))
+    summary_df['plot_order'] = summary_df['treatment'].map(dict_to_order)
+    collated_sorted = summary_df.sort_values(['plot_order', 'transition_type'])
+    sorted_df = df.sort_values(['treatment', 'transition_type'])
+    ###### now plot the figure
+    fig, ax = plt.subplots()
+    sns.set(style = 'ticks', font_scale = 1)
+    sns.barplot(x='transition_name', y='y_axis', data=sorted_df, hue='treatment', palette=palette, ci =None, hue_order=order)
+    x_coords = [p.get_x() + 0.5 * p.get_width() for p in ax.patches]
+    y_coords = [p.get_height() for p in ax.patches]
+    ax.errorbar(x=x_coords, y=y_coords, yerr=collated_sorted["sem"], fmt="none",  elinewidth = 2, capsize = 4, color = 'black')
+    plt.ylabel('Residence time (s)')
+    plt.xlabel('')
+    fig.savefig(f'{output_folder}/mean_residence_withSEM.svg', dpi = 600)
+    plt.show()
 
-    Parameters
-    ----------
-    df : DataFrame
-        Long-form dataset containing quantitative information to be plotted
-    x_col : str
-        column containing categories to be plotted along x-axis
-    x_order : list[str]
-        order in which x_col categories should be plotted
-    y_col : str
-        column containing quantitative values to be plotted as y-values
-    hue_col : str
-        column containing categories defining the per-x category split
-    hue_order : list[str]
-        order in which hue_col categories should be plotted
-    show_bars : bool, optional
-        If true, shows barplot drawn to mean of each category, by default False
-    ax : bool, optional
-        If ax object is passed, plots are added to existing axes object. Otherwise, by default False which generates new ax object
-    alpha : float, optional
-        If both alpha and show_bars, controls the transparency of the barplot patches, by default 0.3
-    err_type : str, optional
-        What type of error bar to plot - options are standard deviation (std) and standard error of mean (sem), by default 'std'
-    colors : bool, optional
-        To use custom colours, pass a dictionary mapping each hue category to colour name, by default False and random colours are assigned to each hue category.
-
-    Returns
-    -------
-    matplotlib.axes
-        axes object containing plotted elements. From here, additional axes parameters can readily be adjusted, including labels and title etc.
-    """    
-    if not show_bars:
-        alpha = 0
-    if not ax:
-        fig, ax = plt.subplots()
-    if not colors:
-        colors = dict(zip(hue_order, get_cmap(len(hue_order), name='hsv')))
-
-    # Generate figures
-    scat = sns.stripplot(data=df, x=x_col, y=y_col, hue=hue_col,
-                         hue_order=hue_order, palette=colors, order=x_order, dodge=True, ax=ax, alpha = scat_alpha)
-
-    box = sns.boxplot(data=df.groupby([x_col, hue_col]).mean().reset_index(
-    ), x=x_col, y=y_col, hue=hue_col, hue_order=hue_order, palette=colors, order=x_order, ax=ax)
-
-    bar = sns.barplot(data=df, x=x_col, y=y_col, hue=hue_col, hue_order=hue_order,
-                      palette=colors, order=x_order, alpha=alpha, errwidth=0, ax=ax,)
-
-    # To generate custom error bars
-    bars = bar.patches  # has format [legend*len(hue), hue*xcol]
-    num_legend = len(hue_order)
-
-    widths = [bar.get_width() for bar in bars][num_legend:]
-    xpos = [bar.get_x() for bar in bars][num_legend:]
-    locations = [x + width/2 for x, width in zip(xpos, widths)]
-
-    sample_list = [(hue, x) for hue in hue_order for x in x_order]
-    number_groups = len(hue_order)
-
-    # collect mean, sd for each bar
-    errvals = dict(df.groupby([hue_col, x_col]).aggregate(
-        ['mean', 'std', 'sem'])[y_col].T)
-    for sample in sample_list:
-        if sample in errvals:
-            errvals[sample] = errvals[sample].tolist()
-        else:
-            errvals[sample] = [np.nan, np.nan, np.nan]
-    errvals = pd.DataFrame(errvals, index=['mean', 'std', 'sem'])
-    errvals = errvals[sample_list].T
-
-    # add location info
-    errvals['xpos'] = locations
-
-    (_, caps, _) = ax.errorbar(x=errvals['xpos'], y=errvals['mean'],
-                               yerr=errvals[err_type], capsize=2, elinewidth=1.25, ecolor="black", linewidth=0)
-    for cap in caps:
-        cap.set_markeredgewidth(2)
-
-    # To only label once in legend
-    handles, labels = ax.get_legend_handles_labels()
-    ax.legend(
-        handles[:number_groups],
-        labels[:number_groups],
-        bbox_to_anchor=(1.0, 1.00),
-        title=hue_col,
-    )
-
-
-    return ax
-
-
-
-### to plot with SEM
-x_order = final['transition_type'].unique().tolist()
-sample_sum = len(order)
-palette = dict(zip(order, sns.color_palette('mako', sample_sum))) ### adjust number to be the same as the number of treatments you are plotting
-font = {'weight' : 'normal','size'   : 12 }
-plt.rcParams['font.sans-serif'] = "Arial"
-plt.rcParams['font.family'] = "sans-serif"
-plt.rc('font', **font)
-plt.rcParams['svg.fonttype'] = 'none'
-
-fig, ax = plt.subplots()
-sns.set_style('whitegrid', {'font_scale':1.5, 'grid.linestyle':'--'})
-plot_parameters_scattbar(final, 'transition_type', x_order, 'y_axis', 'treatment', order, show_bars = True, err_type = 'sem', colors = palette, ax = ax)
-plt.ylim(0, 50)
-plt.ylabel('Transition class')
-plt.xticks(rotation = 45)
-[x.set_linewidth(2) for x in ax.spines.values()]
-[x.set_color('black') for x in ax.spines.values()]
-fig.savefig(f'{output_folder}/mean_residence_withSEM.svg', dpi = 600)
-plt.show()
+plot_bar_with_sem(final, collated)
 
 
 def plot_residence_time_of_class(df, binwidth, plot_type = 'KDE', log = False):
