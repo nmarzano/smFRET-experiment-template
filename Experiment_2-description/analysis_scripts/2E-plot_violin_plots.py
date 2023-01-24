@@ -11,11 +11,11 @@ FRET_thresh = 0.5 #### FRET value at which to filter data above or below.
 order = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 data_paths_violin = {
-    "treatment_label_1":"data_directory_1",
-    "treatment_label_2":"data_directory_2",
-    "treatment_label_3":"data_directory_3",
-    "treatment_label_4":"data_directory_4",
-    "treatment_label_5":'data_directory_5',
+    f"{order[0]}":"directory_1",
+    f"{order[1]}":"directory_2",
+    f"{order[2]}":"directory_3",
+    f"{order[3]}":"directory_4",
+    f"{order[4]}":"directory_5",
 }
 #### Directory for above should come from the Dwell_times folder in python_results
 
@@ -125,8 +125,8 @@ def plot_violin(data, scale = "y_axis"):
     if scale == 'split':     
         f, (ax_top, ax_bottom) = plt.subplots(ncols=1, nrows=2, sharex=True, gridspec_kw={'hspace':0.05})
         sns.set(style = 'ticks')
-        sns.violinplot(x="transition_name", y="y_axis", hue="treatment",data=data, ax=ax_top, palette = 'mako')
-        sns.violinplot(x="transition_name", y="y_axis", hue="treatment",data=data, ax=ax_bottom, cut = 0, palette = 'mako')
+        sns.violinplot(x="transition_name", y="y_axis", hue="treatment",data=data, ax=ax_top, palette = 'mako', scale = 'width')
+        sns.violinplot(x="transition_name", y="y_axis", hue="treatment",data=data, ax=ax_bottom, cut = 0, palette = 'mako', scale = 'width')
         ax_top.set_ylim(bottom=40)   # those limits are fake
         ax_bottom.set_ylim(0,40)
         # sns.despine(ax=ax_bottom)
