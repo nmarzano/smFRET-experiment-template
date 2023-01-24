@@ -113,11 +113,11 @@ colors = {
 
 def plot_hist_type(df, order, kind = 'kde'):
     plot_hist, ax = plt.subplots()
-    sns.set_style("whitegrid",{'figure.figsize':(8,5.5), 'grid.linestyle':'--', 'font_scale':1.5} )
+    sns.set_style("ticks",{'font_scale':1} )
     if kind == 'kde':
         sns.kdeplot(
             data = df, 
-            palette = 'mako', 
+            palette = 'BuPu', 
             x = "FRET",
             hue="treatment_name",
             hue_order = order,
@@ -128,25 +128,24 @@ def plot_hist_type(df, order, kind = 'kde'):
     if kind == 'bar':
         sns.histplot(
             data = df, 
-            palette = 'mako', 
+            palette = 'BuPu_r', 
             x = "FRET",
             hue="treatment_name",
             hue_order = order,
             common_norm=False, 
             stat = 'density',
             binwidth = 0.025,
-            fill = True, 
+            fill = False, 
             kde = True,
             linewidth = 1.5, 
             alpha = 0.25)
     plt.xlim(0, 1, 10)
     plt.xlabel("FRET")
-    plt.legend([labels[treatment] for treatment in reversed(order)],loc='upper left', fontsize = 12)
+    plt.legend([labels[treatment] for treatment in reversed(order)],loc='best', fontsize = 12)
     [x.set_linewidth(2) for x in ax.spines.values()]
     [x.set_color('black') for x in ax.spines.values()]
     plot_hist.savefig(f'{output_folder}/Histogram_{kind}.svg', dpi = 600)
     plt.show()
 
 
-plot_hist_type(compiled_df, order, 'kde')
-
+plot_hist_type(compiled_df, order, 'bar')
