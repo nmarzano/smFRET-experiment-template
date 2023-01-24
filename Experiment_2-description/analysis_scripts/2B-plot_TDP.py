@@ -27,6 +27,7 @@ def plot(treatment):
     plot1.plot_marginals(sns.histplot, kde=True, bins=10)
     plot1.ax_joint.set_facecolor("#404040") # to change the colour of the background
     sns.set(style = 'whitegrid', font_scale = 1.5)
+    plt.show()
     return plot1
 
 for treatment, df in TDP.groupby('treatment_name'):
