@@ -8,18 +8,18 @@ import glob
 import functools
 import os
 
-output_folder = 'Experiment_X-description/python_results'
+output_folder = 'Experiment_1-KCl-titration/python_results'
 plot_folder = f'{output_folder}/dwell_analysis_figs'
 if not os.path.exists(plot_folder):
     os.makedirs(plot_folder)
 filename = f'{output_folder}/TDP_cleaned.csv'
 
-order = ['Native', 'Spontaneous', 'KJ', 'low_GrpE', 'high_GrpE']
-palette = 'mako'
+order = ['PPRalone', '0mM', '100mM', '250mM', '500mM']
+palette_to_use = 'BuPu'
 FRET_thresh = 0.5 #### FRET value at which to filter data above or below. 
 thresh_for_events = 0.5 #### FRET value to threshold for count chaperone events (i.e., binding and unbinding)
 fps = 5  ### frames per second
-thresh = 2 ### should be 10x expsoure if using NL515 smoothing on MASH FRET
+thresh = 0.8 ### should be 10x expsoure if using NL515 smoothing on MASH FRET
 headers = [f"< {FRET_thresh} to < {FRET_thresh}", f"< {FRET_thresh} to > {FRET_thresh}", f"> {FRET_thresh} to > {FRET_thresh}", f"> {FRET_thresh} to < {FRET_thresh}"]
 TDP_data = pd.read_csv(filename, header = "infer")
 
@@ -42,7 +42,7 @@ for treatment_name, df in TDP_data.groupby("treatment_name"):
 ###############
 Transition_threshold = 0.5
 
-def plot_fret_trans(df, FRET_state = 'after', to_drop = 'none', threshold = Transition_threshold, palette = 'mako'):
+def plot_fret_trans(df, FRET_state = 'after', to_drop = 'none', threshold = Transition_threshold, palette = palette_to_use):
     """Function to plot the FRET state before or after a transition above or below a defined FRET state
 
     Args:
@@ -52,23 +52,23 @@ def plot_fret_trans(df, FRET_state = 'after', to_drop = 'none', threshold = Tran
         threshold (_type_, optional): The FRET state that determines the kind of transitions you are looking at. If set to 0.3, and FRET_state is = 'before', this will plot the FRET state before transition to below 0.3 FRET. Defaults to Transition_threshold.
         palette (str, optional): Choose colour scheme to plot. Defaults to 'mako'.
     """
-    sns.set_style("whitegrid", {'grid.linestyle':'--'})
+    sns.set(style = "ticks", font_scale = 1)
     if to_drop == 'none':
         if FRET_state == 'after':
-            plot1, ax = plt.subplots(figsize = (12, 6))
+            plot1, ax = plt.subplots()
             sns.set(style = "ticks", font_scale = 1.5)
             sns.violinplot(data = df, x = 'treatment_name', y = 'FRET_after', palette = palette, order = order)
             sns.stripplot(data = df, x = 'treatment_name', y = 'FRET_after', color='black', alpha = 0.25, order = order)
             plt.ylabel(f'FRET state after transition from < {threshold}')
         elif FRET_state == 'before':
-            plot1, ax = plt.subplots(figsize = (12, 6))
+            plot1, ax = plt.subplots()
             sns.set(style = "ticks", font_scale = 1.5)
             sns.violinplot(data = df, x = 'treatment_name', y = 'FRET_before', palette = palette, order = order)
             sns.stripplot(data = df, x = 'treatment_name', y = 'FRET_before', color='black', alpha = 0.25, order = order)
             plt.ylabel(f'FRET state before transition to < {threshold}')
     else:
         dropped = df[~df['treatment_name'].isin(to_drop)].dropna()
-        plot1, ax = plt.subplots(figsize = (12, 6))
+        plot1, ax = plt.subplots()
         sns.set(style = "ticks", font_scale = 1.5)
         sns.violinplot(data = dropped, x = 'treatment_name', y = 'FRET_before')
         sns.stripplot(data = dropped, x = 'treatment_name', y = 'FRET_before', color='black', alpha = 0.25)
@@ -135,7 +135,7 @@ org_chap_events['bind_and_release'] = org_chap_events[['FRET_after', 'FRET_befor
 org_chap_events['bind_and_release_overtime'] = (org_chap_events['bind_and_release']/org_chap_events['Total Molecule Lifetime (min)'])
 org_chap_events['bind_and_release_overtime'] = org_chap_events['bind_and_release_overtime'].replace(0, np.nan)
 
-def plot_binding_release(df, chaperone = 'binding', order = False, palette = 'mako'):
+def plot_binding_release(df, chaperone = 'binding', order = False, palette = palette_to_use):
     # sourcery skip: switch
     """Plots the number or rate of chaperone binding and/or release events per molecule
 
@@ -161,7 +161,7 @@ def plot_binding_release(df, chaperone = 'binding', order = False, palette = 'ma
         ycol = 'bind_and_release_overtime'
         ylabel = '# of chaperone binding and release events/molecule/min'
         title = 'chaperone_binding_and_release_events_per_molecule_min'
-    sns.set_style("whitegrid", {'grid.linestyle':'--'})
+    sns.set(style = "ticks", font_scale = 1)
     plot1, ax = plt.subplots()
     sns.set(font_scale = 1.5, style = 'ticks')
     sns.violinplot(data = df, y = ycol, x = 'treatment', cut = 0, order = order, palette = palette)
@@ -216,8 +216,8 @@ def find_large_transitions(dfs, delta_thresh):
     dfs.columns = ['proportion_mol_large_transition', 'treatment', 'proportion_of_large_transitions']
     return dfs
 
-def plot_large_transitions(df, type = 'transition_prob', palette = 'mako'):
-    sns.set_style("whitegrid", {'grid.linestyle':'--'})
+def plot_large_transitions(df, type = 'transition_prob', palette = palette_to_use):
+    sns.set(style = "ticks", font_scale = 1)
     if type == 'transition_prob': 
         ycol = 'proportion_of_large_transitions'
     if type == 'proportion_of_mol': 
