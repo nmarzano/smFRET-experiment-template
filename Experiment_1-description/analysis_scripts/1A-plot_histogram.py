@@ -22,6 +22,8 @@ data_paths = {
 }
 
 
+dict_key = list(data_paths.keys())
+
 ##########
 ########## Data from all data sets in the dict will be imported and concatenated into a single dataframe. Outliers wil be removed.
 from Utilities.Data_analysis import remove_outliers, file_reader
@@ -42,7 +44,7 @@ compiled_df.to_csv(f'{output_folder}/Cleaned_FRET_histogram_data.csv', index = F
 ###################################################
 
 labels = {data_name:label for data_name, (label, data_path) in data_paths.items()}
-order = ["5","4", "3", "2", "1"] ### sets order for histogram
+order = [f"{dict_key[4]}",f"{dict_key[3]}", f"{dict_key[2]}", f"{dict_key[1]}", f"{dict_key[0]}"] ### sets order for histogram
 font = {'weight' : 'normal', 'size'   : 12 }
 matplotlib.rcParams['font.sans-serif'] = "Arial"
 matplotlib.rcParams['font.family'] = "sans-serif"
@@ -51,18 +53,11 @@ plt.rcParams['svg.fonttype'] = 'none'
 
 ####### Sets order for ridgeline plot
 data_paths_ridgeline = {
-    "1":"label",
-    '2':'label',
-    "3":"label",
-    "4":"label", 
-    "5":"label", 
-    "6":"label",
-    "7":"label", 
-    "8":"label", 
-    "9":"label", 
-    "10":"label", 
-    "11":"label", 
-    "12":"label",
+    "1":f"{dict_key[0]}",
+    '2':f"{dict_key[1]}",
+    "3":f"{dict_key[2]}",
+    "4":f"{dict_key[3]}", 
+    "5":f"{dict_key[4]}", 
 }
 
 n_colors = len(data_paths_ridgeline)
