@@ -115,8 +115,8 @@ to_filt = ['TREATMENT'] ######### select if you want what datasets to include in
 
 plot_heatmap(compiled_df, 100, 80, 'kde')
 plot_first_specified_transition(col, transition_type)
-plot_average_FRET_over_time(normalised_data, to_filt, 'sd', 'time') ##### change to 'to_filt' to include only datasets that were mentioned above
-plot_average_FRET_over_time(normalised_data, to_filt, 'sd', 'normalised_to_event', False)  #### add True to plot subplots
+plot_average_FRET_over_time(normalised_data, no_filt, 'sd', 'time') ##### change to 'to_filt' to include only datasets that were mentioned above
+plot_average_FRET_over_time(normalised_data, no_filt, 'sd', 'normalised_to_event', False)  #### add True to plot subplots
 
 print(col.groupby('treatment')['cum_sum'].mean())
 print(col.groupby('treatment')['cum_sum'].sem())
