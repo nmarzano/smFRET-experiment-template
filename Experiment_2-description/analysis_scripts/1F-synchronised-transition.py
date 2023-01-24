@@ -138,10 +138,19 @@ def plot_synchronised_transition(dfs, index_to_plot, exposure_seconds, list_to_d
     filt_data = combined_mini[~combined_mini['treatment_name'].isin(list_to_drop)]
     fig, axes = plt.subplots()
     sns.set(style = 'ticks')
-    sns.lineplot(data = filt_data, x = 'time_from_trans', y = 'FRET', hue = 'treatment_name')
+    sns.lineplot(data = filt_data, x = 'time_from_trans', y = 'FRET', hue = 'treatment_name', palette = 'BuPu')
     plt.xlabel('Time (s)')
     plt.legend(loc = 'best')
     plt.show()
+
+
+list_to_drop = ['']
+dnak_stable_release = filt_df_to_plot(calculated_transitions_df, 0.5, 0.5,'low_to_high', 10)
+plot_synchronised_transition(calculated_transitions_df, dnak_stable_release, exposure, list_to_drop, 10)
+
+dnak_stable_binding = filt_df_to_plot(calculated_transitions_df, 0.5, 0.5, 'high_to_low', 10)
+plot_synchronised_transition(calculated_transitions_df, dnak_stable_binding, exposure, list_to_drop, 10)
+
 
 
 list_to_drop = ['PPR_alone', 'RNA05']
