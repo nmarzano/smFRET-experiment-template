@@ -164,7 +164,7 @@ def plot_binding_release(df, chaperone = 'binding', order = False, palette = pal
     sns.set(style = "ticks", font_scale = 1)
     plot1, ax = plt.subplots()
     sns.set(font_scale = 1.5, style = 'ticks')
-    sns.violinplot(data = df, y = ycol, x = 'treatment', cut = 0, order = order, palette = palette)
+    sns.violinplot(data = df, y = ycol, x = 'treatment', cut = 0, order = order, palette = palette, scale = 'width')
     sns.stripplot(data = df, y = ycol, x = 'treatment', color='black', alpha = 0.25, order = order)
     plt.xticks(rotation = 45)
     [x.set_linewidth(2) for x in ax.spines.values()]
@@ -172,6 +172,7 @@ def plot_binding_release(df, chaperone = 'binding', order = False, palette = pal
     plt.ylabel(f'{ylabel}')
     plot1.savefig(f'{plot_folder}/{title}.svg', dpi = 600)
     plt.show()
+
 
 plot_binding_release(org_chap_events, 'binding_and_release', order)
 #################

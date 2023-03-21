@@ -140,7 +140,7 @@ def plot_synchronised_transition(dfs, index_to_plot, exposure_seconds, list_to_d
     sns.set(style = 'ticks')
     sns.lineplot(data = filt_data, x = 'time_from_trans', y = 'FRET', hue = 'treatment_name', palette = 'BuPu')
     plt.xlabel('Time (s)')
-    plt.legend(loc = 'best')
+    plt.legend(title = '', loc = 'best')
     plt.show()
 
 

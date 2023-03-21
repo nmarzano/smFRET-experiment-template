@@ -103,7 +103,7 @@ def plot_violin(data, scale = "y_axis"):
             cut = 0)
         plt.ylabel("Residence time (s)")
         plt.xlabel("Transition class")
-        plt.legend(loc = "upper right")
+        plt.legend(title = '', loc = "upper right")
         plot1.savefig(f"{output_folder}/Violin_plot_normal.svg", dpi = 600)
         plt.show()
     if scale == "y_axis_log10":
@@ -119,7 +119,7 @@ def plot_violin(data, scale = "y_axis"):
             log_scale = True)
         plt.ylabel("Log residence time (s)")
         plt.xlabel("Transition class")
-        plt.legend(loc = "upper left", bbox_to_anchor = (1,1), ncol =1)
+        plt.legend(title = '', loc = "upper left", bbox_to_anchor = (1,1), ncol =1)
         plot2.savefig(f"{output_folder}/Violin_plot_log.svg", dpi = 600)
         plt.show()
     if scale == 'split':     

@@ -69,7 +69,7 @@ def plot_average_FRET_over_time(df, filt, ci = 'sd', x_axis = 'time', subplot = 
         ax.axvspan(0, 10, facecolor='grey', alpha = .2)   
         plt.ylim(0, 1, 10)
         plt.xlabel('Time (s)')
-        plt.legend(fontsize = 'small')
+        plt.legend(title = '', fontsize = 'small')
         plt.savefig(f'{output_folder}/Average_Heatmap_{filt}.svg', dpi = 600)
     if (x_axis == 'normalised_to_event' and subplot == True):
         nrow = math.ceil(len(filt)/2)
@@ -95,7 +95,7 @@ def plot_average_FRET_over_time(df, filt, ci = 'sd', x_axis = 'time', subplot = 
             plt.axvline(x = 0, linestyle = '--', color = 'grey')
             plt.ylim(0, 1, 10)
             plt.xlabel('Time (s)')
-            plt.legend(fontsize = 'small', loc = 'upper left')
+            plt.legend(title = '', fontsize = 'small', loc = 'upper left')
             plt.savefig(f'{output_folder}/Traces_normalised_to_first_trans_{treatment}.svg', dpi = 600)
             plt.show()
     plt.show()

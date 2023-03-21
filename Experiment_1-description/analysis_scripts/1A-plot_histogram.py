@@ -136,7 +136,7 @@ def plot_hist_type(df, order, kind = 'kde'):
             alpha = 0.25)
     plt.xlim(0, 1, 10)
     plt.xlabel("FRET")
-    plt.legend([labels[treatment] for treatment in reversed(order)],loc='best', fontsize = 12)
+    plt.legend([labels[treatment] for treatment in reversed(order)], loc='best', fontsize = 12, title = '')    
     [x.set_linewidth(2) for x in ax.spines.values()]
     [x.set_color('black') for x in ax.spines.values()]
     plot_hist.savefig(f'{output_folder}/Histogram_{kind}.svg', dpi = 600)
