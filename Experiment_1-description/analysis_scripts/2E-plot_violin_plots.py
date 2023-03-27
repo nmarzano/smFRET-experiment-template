@@ -103,7 +103,7 @@ def plot_violin(data, scale = "y_axis"):
             cut = 0)
         plt.ylabel("Residence time (s)")
         plt.xlabel("Transition class")
-        plt.legend(title = '', loc = "upper right")
+        plt.legend(title = '',loc = "upper right")
         plot1.savefig(f"{output_folder}/Violin_plot_normal.svg", dpi = 600)
         plt.show()
     if scale == "y_axis_log10":
@@ -119,14 +119,14 @@ def plot_violin(data, scale = "y_axis"):
             log_scale = True)
         plt.ylabel("Log residence time (s)")
         plt.xlabel("Transition class")
-        plt.legend(title = '', loc = "upper left", bbox_to_anchor = (1,1), ncol =1)
+        plt.legend(title = '',loc = "upper left", bbox_to_anchor = (1,1), ncol =1)
         plot2.savefig(f"{output_folder}/Violin_plot_log.svg", dpi = 600)
         plt.show()
     if scale == 'split':     
         f, (ax_top, ax_bottom) = plt.subplots(ncols=1, nrows=2, sharex=True, gridspec_kw={'hspace':0.05})
         sns.set(style = 'ticks')
-        sns.violinplot(x="transition_name", y="y_axis", hue="treatment",data=data, ax=ax_top, palette = 'mako', scale = 'width')
-        sns.violinplot(x="transition_name", y="y_axis", hue="treatment",data=data, ax=ax_bottom, cut = 0, palette = 'mako', scale = 'width')
+        sns.violinplot(x="transition_name", y="y_axis", hue="treatment",data=data, ax=ax_top, palette = 'BuPu', scale = 'width')
+        sns.violinplot(x="transition_name", y="y_axis", hue="treatment",data=data, ax=ax_bottom, cut = 0, palette = 'BuPu', scale = 'width')
         ax_top.set_ylim(bottom=40)   # those limits are fake
         ax_bottom.set_ylim(0,40)
         # sns.despine(ax=ax_bottom)
@@ -147,6 +147,7 @@ def plot_violin(data, scale = "y_axis"):
         ax_top.set_ylabel('')
         ax_bottom.set_ylabel('')
         f.text(0.04, 0.5, 'Residence time (s)', ha='center', va='center', rotation='vertical')
+        ax_top.legend(title = '')
         f.savefig(f"{output_folder}/Violin_plot_splitaxis.svg", dpi = 600)
         plt.show()
 
@@ -181,6 +182,7 @@ def plot_bar_with_sem(df, summary_df, palette = 'mako', order = order):
     ax.errorbar(x=x_coords, y=y_coords, yerr=collated_sorted["sem"], fmt="none",  elinewidth = 2, capsize = 4, color = 'black')
     plt.ylabel('Residence time (s)')
     plt.xlabel('')
+    plt.legend(title = '')
     fig.savefig(f'{output_folder}/mean_residence_withSEM.svg', dpi = 600)
     plt.show()
 
