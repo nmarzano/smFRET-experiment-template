@@ -12,7 +12,7 @@ order = ['1', '2', '3', '4']
 
 data_paths_violin = {
     f"{order[0]}":f"{output_folder}/Dwell_times/Filtered_dwelltime_{order[0]}.csv",
-    f"{order[1]}":f"{output_folder}/Dwell_times/Filtered_dwelltime_{order[0]}.csv",    
+    f"{order[1]}":f"{output_folder}/Dwell_times/Filtered_dwelltime_{order[1]}.csv",    
     f"{order[2]}":f"{output_folder}/Dwell_times/Filtered_dwelltime_{order[2]}.csv",
     f"{order[3]}":f"{output_folder}/Dwell_times/Filtered_dwelltime_{order[3]}.csv",
     # f"{order[4]}":"directory_5",
