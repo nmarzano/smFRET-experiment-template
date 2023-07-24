@@ -8,14 +8,14 @@ import Utilities.Data_analysis as uda
 
 output_folder = "Experiment_X-description/python_results"
 FRET_thresh = 0.5 #### FRET value at which to filter data above or below. 
-order = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+order = ['1', '2', '3', '4']
 
 data_paths_violin = {
-    f"{order[0]}":"directory_1",
-    f"{order[1]}":"directory_2",
-    f"{order[2]}":"directory_3",
-    f"{order[3]}":"directory_4",
-    f"{order[4]}":"directory_5",
+    f"{order[0]}":f"{output_folder}/Dwell_times/Filtered_dwelltime_{order[0]}.csv",
+    f"{order[1]}":f"{output_folder}/Dwell_times/Filtered_dwelltime_{order[0]}.csv",    
+    f"{order[2]}":f"{output_folder}/Dwell_times/Filtered_dwelltime_{order[2]}.csv",
+    f"{order[3]}":f"{output_folder}/Dwell_times/Filtered_dwelltime_{order[3]}.csv",
+    # f"{order[4]}":"directory_5",
 }
 #### Directory for above should come from the Dwell_times folder in python_results
 
