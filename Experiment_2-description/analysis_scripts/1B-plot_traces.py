@@ -7,9 +7,50 @@ from scipy.signal import savgol_filter
 import numpy as np
 import os
 
-output_folder = 'Experiment_1-description/python_results/Traces'
+input_folder = 'Experiment_3-KJE_optimized_timelapse/python_results'
+output_folder = f'{input_folder}/Traces'
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
+
+exposure = 0.2  ### exposure in seconds
+
+###################
+################### If you want to plot all molecules with a time threshold greater than a defined point
+###################
+
+compiled_df = pd.read_csv(f'{input_folder}/Cleaned_FRET_histogram_data.csv')
+
+def plot_FRET_test(df, treatment, molecule):
+    plt.rcParams['svg.fonttype'] = 'none'
+    sns.set_style("whitegrid", {'grid.linestyle':'--'})
+    plot2, ax = plt.subplots(figsize = (5, 2))
+    plt.xlim(0, 200, 10)
+    plt.ylim(0, 1.1, 0.2)
+    sns.lineplot(x = df["Time"], y = df["smoothed_FRET"], color = 'black')
+    sns.lineplot(x = df["Time"], y = df["idealized FRET"], color = 'darkorange')
+    [x.set_linewidth(2) for x in ax.spines.values()]
+    [x.set_color('black') for x in ax.spines.values()]
+    plt.xlabel("Time (s)")
+    plt.ylabel("FRET")
+    plt.title(f'{treatment}-{molecule}')
+    plt.show()
+    return plot2, ax
+
+
+compiled_df['Time'] = compiled_df['frames']/(1/exposure)
+compiled_df["smoothed_FRET"] = savgol_filter(compiled_df["FRET"], 5, 2) 
+
+for (treatment, molecule), df in compiled_df.groupby(['treatment_name', 'molecule_number']):
+    if df.Time.iloc[-1] > 180:
+        plot, ax = plot_FRET_test(df, treatment, molecule)
+        plot.savefig(f'{output_folder}/{treatment}_Trace_{molecule}.svg', dpi = 600)
+    else:
+        continue
+
+
+##############
+############## Code to import data and concatenate all molecule data for sequential plotting
+##############
 
 #### the first item in the tuple will be the name that goes into the graph legend
 data_paths = {
@@ -18,12 +59,7 @@ data_paths = {
     "example3":"Figures/Figure_5/raw_data/200715_Fluc_FoldandUnfold/80_PATH_D111020_T2254.dat"
 }
 
-exposure = 0.2  ### exposure in seconds
 
-
-##############
-############## Code to import data and concatenate all molecule data for sequential plotting
-##############
 
 def load_data(filename):
     trace_df = pd.DataFrame(np.loadtxt(filename))
@@ -73,7 +109,7 @@ def plot_FRET(treatment):
     plt.xlabel("Time (s)")
     plt.ylabel("FRET")
     plt.show()
-    return plot2
+    return plot2, ax
 
 def plot_both(df):
     fig, ax = plt.subplots(2, 1, sharex = True)
@@ -97,6 +133,4 @@ for data_name, data_path in data_paths.items():
     plot_both(treatment).savefig(f'{output_folder}/{data_name}_Trace_{mol_ident}_both.svg', dpi = 600)
     plot_FRET(treatment).savefig(f'{output_folder}/{data_name}_Trace_{mol_ident}.svg', dpi = 600)
     plot_intensity(treatment).savefig(f'{output_folder}/{data_name}_Trace_{mol_ident}_intensity.svg', dpi = 600)
-
-
 
