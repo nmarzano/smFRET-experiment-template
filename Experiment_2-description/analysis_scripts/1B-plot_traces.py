@@ -48,9 +48,51 @@ for (treatment, molecule), df in compiled_df.groupby(['treatment_name', 'molecul
         continue
 
 
+###################
+################### If you want to plot the first 20 molecules for each treatment together
+###################
+
+test = []
+for (treatment, molecule), df in compiled_df.groupby(['treatment_name', 'molecule_number']):
+    if df.Time.iloc[-1] > 180:
+        test.append(df)
+    else:
+        continue
+    testies = pd.concat(test)
+
+renumbered_mol = []
+for treatment, df in testies.groupby('treatment_name'):
+    mask = df['molecule_number'].ne(df['molecule_number'].shift())
+    df['Change_Count'] = mask.cumsum()
+    renumbered_mol.append(df)
+compiled_df_long_renumbered = pd.concat(renumbered_mol)
+
+
+for treatment, df in compiled_df_long_renumbered.groupby('treatment_name'):
+    df_filt = df[df['Change_Count']<21]
+    df_filt_mol_list = list(df_filt['Change_Count'].unique())
+    nrow = math.ceil(len(df_filt_mol_list)/4)
+    fig, axes = plt.subplots(nrow, 4, figsize = (16, 2*nrow), sharex = True, sharey = True)
+    sns.set_style('ticks')
+    axes = axes.flatten()
+    for i, mol_number in enumerate(df_filt_mol_list):
+        data = df[df['Change_Count'] == mol_number]
+        sns.lineplot(x = data["Time"], y = data["smoothed_FRET"], color = 'black', ax = axes[i])
+        sns.lineplot(x = data["Time"], y = data["idealized FRET"], color = 'darkorange', ax = axes[i])
+        axes[i].axvline(x = 0, linestyle = '--', color = 'grey')
+        [x.set_linewidth(2) for x in ax.spines.values()]
+        [x.set_color('black') for x in ax.spines.values()]
+        plt.xlim(0, 200)
+        plt.ylim(0, 1)
+        axes[i].set_xlabel('Time (s)')
+        axes[i].set_title(f"{treatment}")
+        # axes[i].get_legend().remove()
+    plt.show()
+
 ##############
 ############## Code to import data and concatenate all molecule data for sequential plotting
 ##############
+
 
 #### the first item in the tuple will be the name that goes into the graph legend
 data_paths = {
