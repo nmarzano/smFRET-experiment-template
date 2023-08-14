@@ -6,6 +6,7 @@ import pandas as pd
 from scipy.signal import savgol_filter
 import numpy as np
 import os
+import math
 
 input_folder = 'Experiment_3-KJE_optimized_timelapse/python_results'
 output_folder = f'{input_folder}/Traces'
@@ -69,8 +70,8 @@ compiled_df_long_renumbered = pd.concat(renumbered_mol)
 
 
 for treatment, df in compiled_df_long_renumbered.groupby('treatment_name'):
-    df_filt = df[df['Change_Count']<21]
-    df_filt_mol_list = list(df_filt['Change_Count'].unique())
+    # df_filt = df[df['Change_Count']>21]
+    df_filt_mol_list = list(df['Change_Count'].unique())
     nrow = math.ceil(len(df_filt_mol_list)/4)
     fig, axes = plt.subplots(nrow, 4, figsize = (16, 2*nrow), sharex = True, sharey = True)
     sns.set_style('ticks')
@@ -85,6 +86,7 @@ for treatment, df in compiled_df_long_renumbered.groupby('treatment_name'):
         plt.xlim(0, 200)
         plt.ylim(0, 1)
         axes[i].set_xlabel('Time (s)')
+        axes[i].set_ylabel('FRET')
         axes[i].set_title(f"{treatment}")
         # axes[i].get_legend().remove()
     plt.show()
