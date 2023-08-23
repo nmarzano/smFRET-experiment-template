@@ -17,8 +17,9 @@ FRET_value = 0.2 #### the proportion of molecules that travel below this thresho
 exposure = 0.2 # in seconds
 order = ['KJE', 'KJEG', 'KJEG_wt', 'KJEG_e34a']
 list_to_drop = ['']
-
 frames_to_plot = 50
+FRET_before = 0.5
+FRET_after = 0.5
 
 ###########
 ########### Calculates the dwell time for each idealized FRET state based on the HMM fits and then appends the dwell duration to the cleaned FRET histogram data.
@@ -198,10 +199,10 @@ plt.rcParams['font.family'] = "sans-serif"
 plt.rc('font', **font)
 plt.rcParams['svg.fonttype'] = 'none'
 
-dnak_stable_release = filt_df_to_plot(calculated_transitions_df, 0.2, 0.2,'low_to_high', frames_to_plot)
+dnak_stable_release = filt_df_to_plot(calculated_transitions_df, FRET_before, FRET_after,'low_to_high', frames_to_plot)
 plot_synchronised_transition(calculated_transitions_df, dnak_stable_release, exposure, list_to_drop, order, frames_to_plot, 'release')
 
-dnak_stable_binding = filt_df_to_plot(calculated_transitions_df, 0.2, 0.2, 'high_to_low', frames_to_plot)
+dnak_stable_binding = filt_df_to_plot(calculated_transitions_df, FRET_before, FRET_after, 'high_to_low', frames_to_plot)
 plot_synchronised_transition(calculated_transitions_df, dnak_stable_binding, exposure, list_to_drop, order, frames_to_plot, 'binding')
 
 
@@ -219,12 +220,12 @@ consecutive_data = pd.concat(col)
 consecutive_trans, nonconsecutive_trans, percent_trans_meet_criteria_df = concat_trans_proportion(
     consecutive_data, 
     calculated_transitions_df, 
-    0.2, 
-    0.2)
+    FRET_before, 
+    FRET_after)
 
 ####### calling functions to plot synchronised transition
-consecutive_from_dnak_release = filt_df_to_plot(consecutive_trans, 0.2, 0.2,'low_to_high', frames_to_plot)
-nonconsecutive_from_dnak_release = filt_df_to_plot(nonconsecutive_trans, 0.2, 0.2,'low_to_high', frames_to_plot)
+consecutive_from_dnak_release = filt_df_to_plot(consecutive_trans, FRET_before, FRET_after,'low_to_high', frames_to_plot)
+nonconsecutive_from_dnak_release = filt_df_to_plot(nonconsecutive_trans, FRET_before, FRET_after,'low_to_high', frames_to_plot)
 
 plot_synchronised_transition(calculated_transitions_df, consecutive_from_dnak_release, exposure, list_to_drop, order, frames_to_plot, 'consecutive_transitions')
 plot_synchronised_transition(calculated_transitions_df, nonconsecutive_from_dnak_release, exposure, list_to_drop, order, frames_to_plot, 'non-consecutive_transition')
