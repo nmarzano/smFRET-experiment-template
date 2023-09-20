@@ -8,10 +8,10 @@ import glob
 import os
 from Utilities.Data_analysis import filter_TDP, file_reader, count_filt_mol
 
-output_folder = 'Experiment_1-description/python_results'
+output_folder = 'Figure3b-overhangs_9-10-11-22-only_col/python_results'
 compiled_data = pd.read_csv(f'{output_folder}/Cleaned_FRET_histogram_data.csv')
 FRET_value = 0.5 #### the proportion of molecules that travel below this threshold will be counted
-
+exposure = 0.2
 ################
 ################ Remove outliers from TDP data, calculate the dwell/residence times of each FRET state from HMM analysis and identify transitions. Concatenatea all datasets into a single dataframe.
 ################
@@ -123,4 +123,120 @@ proportion_mol_below_thresh = pd.DataFrame(count_filt_mol(compiled_TDP, FRET_val
 proportion_mol_below_thresh['norm_percent_mol'] = proportion_mol_below_thresh['proportion_mol_below_thresh'] - proportion_mol_below_thresh['proportion_mol_below_thresh'].iloc[0]
 proportion_mol_below_thresh.reset_index()
 proportion_mol_below_thresh.to_csv(f'{output_folder}/mol_below_{FRET_value}.csv', index = None)
+
+
+
+# Define multiple conditions and corresponding values
+conditions = [
+    (compiled_TDP['FRET_before'] < FRET_value) & (compiled_TDP['FRET_after'] > FRET_value),
+    (compiled_TDP['FRET_before'] < FRET_value) & (compiled_TDP['FRET_after'] < FRET_value),
+    (compiled_TDP['FRET_before'] > FRET_value) & (compiled_TDP['FRET_after'] > FRET_value),
+    (compiled_TDP['FRET_before'] > FRET_value) & (compiled_TDP['FRET_after'] < FRET_value),
+]
+
+values = ['low-high', 'low-low', 'high-high', 'high-low']
+
+# Create a new column based on the conditions and values
+compiled_TDP['transition_type'] = np.select(conditions, values)
+
+
+def determine_if_in_sequence(df):
+    """This function creates a new column that tells you if a row is part of a sequence or run of similar values in the 'transition type' column.
+    It first creates a new column 'shift' which has the values from 'transition type' shifted down by 1 and then using a 
+    set of criteria which is nested in the for loop it will create a new column 'is_in_sequence' to determine if each row is part of a sequence
+    of identical 'transition type' values. 
+
+    Args:
+        df (dataframe): dataframe for a single molecule within a specific treatment. Needs to be done on a per molecule basis.
+
+    Returns:
+        dataframe: dataframe with the additional columns, which can be fed into the next function (determine_cumulative_sum_in_sequence)
+    """
+    transition_type = list(df['transition_type'])
+    df['shift'] = df["transition_type"].shift()
+    df["transition_type"] == df["shift"]
+    poop = list(df["transition_type"] == df["shift"])
+    poop_short = poop[:-1]
+    # poop[-1]
+    pooped = []
+    # len(poop)
+    for x, dfs in enumerate(poop_short):
+        dfs
+        if x == 0 and poop[x+1] == True:
+            value = True
+            pooped.append(value)
+        elif dfs == True:
+            value = True
+            pooped.append(value)
+        elif dfs == True and (poop[x+1] == False):
+            value = True
+            pooped.append(value)
+        elif dfs == False and (poop[x+1] == True):
+            value = True
+            pooped.append(value)
+        else:     
+            value = False
+            pooped.append(value)
+    if poop[-1] == True:
+        value = True
+        pooped.append(value)
+    elif poop[-1] == False:
+        value = False
+        pooped.append(value)
+    df['is_in_sequence'] = pooped
+    return df
+
+
+
+def determine_cumulative_sum_in_sequence(df, exposure):
+    """Takes a dataframe and adds a column called 'CumulativeTime'. What this function does is that it uses the 'is_in_sequence'
+    column and it will identify a 'run' of True values and calculate the cumulative sum of all True values in the 'run'
+    of True values and update the 'CumulativeTime' value in the row that breaks the run (i.e., the first False value after
+    a run of True values) - these are the low-high or high-low transitions preceeded by multiple low-low or high-high transitions.
+    The code the finds all low-high or high-low that are not preceeded by a sequence of True values and updates the 
+    CumulativeTime column with the value that is in the 'Time' column - i.e., the rest of the low-high or high-low transitions
+    not encompassed by the cumulative residence times.
+
+    Args:
+        df (dataframe): dataframe containing 'is_in_sequence' column originated from the 'determine_if_in_sequence' function
+        exposure (variable): defined at top of script (in seconds), used to convert CumulativeTime (which is actually in frames) to a unit of time.
+
+    Returns:
+        dataframe: dataframe containing the CumulativeTime of all low-high or high-low transitions. Note that although high-high
+        or low-low transitions are still present, these will be equal to 0. 
+    """
+    df['CumulativeTime'] = 0
+    # Initialize variables to track the current run of True values and the cumulative sum
+    current_run = 0
+    cumulative_sum = 0
+    # Iterate through the DataFrame rows
+    for index, row in df.iterrows():
+        if row['is_in_sequence']:
+            current_run += 1
+            cumulative_sum += row['Time']
+        else:
+            if current_run > 0:
+                # Update the cumulative sum in the row that breaks the run
+                df.at[index, 'CumulativeTime'] = cumulative_sum
+                current_run = 0
+                cumulative_sum = 0
+    # Handle the case where the run of True values extends to the end of the DataFrame
+    # if current_run > 0:
+    #     df.at[len(df) - 1, 'CumulativeTime'] = cumulative_sum
+    # df.dropna(subset = ['Molecule'],inplace=True)
+    # cum_sum_compiled.append(df)
+    mask = (df['CumulativeTime'] == 0) & (df['transition_type'].isin(['low-high', 'high-low']))
+    df.loc[mask, 'CumulativeTime'] = df.loc[mask, 'Time']
+    df.dropna(subset = ['Molecule'],inplace=True)
+    df['CumulativeTime(s)'] =  df['CumulativeTime']*exposure
+    return df
+
+
+combined_data = []
+for (treatment, molecule), df in compiled_TDP.groupby(['treatment_name', 'Molecule']):
+    test = determine_if_in_sequence(df)
+    test2 = determine_cumulative_sum_in_sequence(test, exposure)
+    combined_data.append(test2)
+cumulative_dwell_transitions = pd.concat(combined_data)
+cumulative_dwell_transitions.to_csv(f'{output_folder}/cumulative_dwell.csv', index =  False)
 
