@@ -8,12 +8,12 @@ import Utilities.Data_analysis as uda
 import os
 
 output_folder = "Experiment_1-description/python_results"
-plot_export = 'Experiment_1-description/python_results/Residence_time_plots/'
+plot_export = f'{output_folder}/Residence_time_plots/'
 if not os.path.exists(plot_export):
     os.makedirs(plot_export)
-FRET_thresh = 0.5 #### FRET value at which to filter data above or below. 
+FRET_thresh = 0.2 #### FRET value at which to filter data above or below. 
 cumulative_dwell = pd.read_csv(f'{output_folder}/cumulative_dwell.csv')
-order = ['', '','', '', '']
+order = ['', '', '', '', '']
 
 data_paths_violin = {
     f"{order[0]}":f"{output_folder}/Dwell_times/Filtered_dwelltime_{order[0]}.csv",
@@ -133,8 +133,8 @@ def plot_violin(data, scale = "y_axis"):
     if scale == 'split':     
         f, (ax_top, ax_bottom) = plt.subplots(ncols=1, nrows=2, sharex=True, gridspec_kw={'hspace':0.05})
         sns.set(style = 'ticks')
-        sns.violinplot(x="transition_name", y="y_axis", hue="treatment",data=data, ax=ax_top, palette = colors_violin, scale = 'width')
-        sns.violinplot(x="transition_name", y="y_axis", hue="treatment",data=data, ax=ax_bottom, cut = 0, palette = colors_violin, scale = 'width')
+        sns.violinplot(x="transition_name", y="y_axis", hue="treatment",data=data, ax=ax_top, palette = 'BuPu', scale = 'width')
+        sns.violinplot(x="transition_name", y="y_axis", hue="treatment",data=data, ax=ax_bottom, cut = 0, palette = 'BuPu', scale = 'width')
         ax_top.set_ylim(bottom=40)   # those limits are fake
         ax_bottom.set_ylim(0,40)
         # sns.despine(ax=ax_bottom)
@@ -171,8 +171,8 @@ collated.drop([col for col in collated.columns.tolist() if 'y_axis_log10' in col
 collated.columns = ['mean_residence_time', 'sem', 'n']
 collated.reset_index(inplace = True)
 collated.to_csv(f"{output_folder}/summary.csv", index = False)
-collated_filt = collated[(collated['transition_type'] == '< 0.5 to > 0.5')|(collated['transition_type'] == '> 0.5 to < 0.5')]
-final_filt = final[(final['transition_type'] == '< 0.5 to > 0.5')|(final['transition_type'] == '> 0.5 to < 0.5')]
+collated_filt = collated[(collated['transition_type'] == f'< {FRET_thresh} to > {FRET_thresh}')|(collated['transition_type'] == f'> {FRET_thresh} to < {FRET_thresh}')]
+final_filt = final[(final['transition_type'] == f'< {FRET_thresh} to > {FRET_thresh}')|(final['transition_type'] == f'> {FRET_thresh} to < {FRET_thresh}')]
 
 
 def plot_bar_with_sem(df, summary_df, y_axis = 'y_axis', palette = 'mako', order = order):
@@ -194,8 +194,6 @@ def plot_bar_with_sem(df, summary_df, y_axis = 'y_axis', palette = 'mako', order
     plt.legend(title = '')
     fig.savefig(f'{plot_export}/mean_residence_withSEM_{y_axis}.svg', dpi = 600)
     plt.show()
-
-
 
 
 
@@ -237,7 +235,7 @@ def plot_residence_time_of_class(df, binwidth, transition, plot_type = 'KDE', lo
                 palette = 'mako')
             axes[i].set_xlabel("Residence time before transition to 'bound' state (s)")
             axes[i].set_title(f'{treatment}', loc = 'center')
-            plt.xlim(0, 50)
+            plt.xlim(0, 200)
         plt.savefig(f'{plot_export}/residence_time_histogram_{plot_type}.svg', dpi = 600)
         plt.show()
     if plot_type == 'cum_dwell':
@@ -261,9 +259,8 @@ def plot_residence_time_of_class(df, binwidth, transition, plot_type = 'KDE', lo
             axes[i].set_xlabel("Residence time before transition to 'bound' state (s)")
             axes[i].set_title(f'{treatment}')
             axes[i].legend('')
-            plt.xlim(0, 100)
+            plt.xlim(0, 200)
         plt.savefig(f'{plot_export}/residence_time_histogram_{plot_type}.svg', dpi = 600)
-            # fig.savefig(f'{output_folder}/normal_scale.svg', dpi = 600)
         plt.show()
     plt.show
 
@@ -274,9 +271,9 @@ def plot_residence_time_of_class(df, binwidth, transition, plot_type = 'KDE', lo
 ##################
 
 
-plot_bar_with_sem(final, collated, 'y_axis',colors_violin, colors_violin)
-plot_bar_with_sem(final_filt, collated_filt, 'y_axis', colors_violin, colors_violin)
-plot_residence_time_of_class(final, 2, '< 0.5 to > 0.5','collated', False)
+plot_bar_with_sem(final, collated, 'y_axis','BuPu', order)
+plot_bar_with_sem(final_filt, collated_filt, 'y_axis', 'BuPu', order)
+plot_residence_time_of_class(final, 20, f'< {FRET_thresh} to > {FRET_thresh}','collated', False)
 
 #################
 ################# Prepare cumulative dwell time data for plotting
@@ -310,7 +307,7 @@ cumulative_dwell_filt = cumulative_dwell[(cumulative_dwell['transition_type'] ==
 ################### plot cumulative residence time data
 ##################
 
-plot_bar_with_sem(cumulative_dwell, col_cum_dwell, 'CumulativeTime(s)', colors_violin, colors_violin)
-plot_bar_with_sem(cumulative_dwell_filt, col_cum_dwell_filt, 'CumulativeTime(s)',colors_violin, colors_violin)
-plot_residence_time_of_class(cumulative_dwell_filt, 5, 'cum_dwell', False)
+plot_bar_with_sem(cumulative_dwell, col_cum_dwell, 'CumulativeTime(s)', 'BuPu', order)
+plot_bar_with_sem(cumulative_dwell_filt, col_cum_dwell_filt, 'CumulativeTime(s)','BuPu', order)
+plot_residence_time_of_class(cumulative_dwell_filt, 20, 'low-high','cum_dwell', False)
 
