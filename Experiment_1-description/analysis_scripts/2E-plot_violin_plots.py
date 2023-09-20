@@ -192,8 +192,10 @@ def plot_bar_with_sem(df, summary_df, y_axis = 'y_axis', palette = 'mako', order
     plt.ylabel('Residence time (s)')
     plt.xlabel('')
     plt.legend(title = '')
-    fig.savefig(f'{plot_export}/mean_residence_cumdwell_withSEM.svg', dpi = 600)
+    fig.savefig(f'{plot_export}/mean_residence_withSEM_{y_axis}.svg', dpi = 600)
     plt.show()
+
+
 
 
 
