@@ -301,6 +301,36 @@ def fret_state_trans(dfs, thresh, fps_clean, thresh_clean, state = 'after'):
     return filtered_f_state
 
 
+def file_reader_3colour(input_folder, data_type):
+    """will import data
 
+    Args:
+        input_folder (directory): where data is stored
+        data_type (str): what data will be used to plot, needs to be either 'hist', 'TDP', 'transition_frequency'
+        or 'other'. 
 
+    Returns:
+        dataframe: dataframe with data to be used in subseqeunt codes
+    """
+    if data_type == 'hist':
+        filenames = glob.glob(input_folder + "/*.txt")
+        dfs = []
+        for i, filename in enumerate(filenames):
+            molecule_number = re.split(r'(\d+)', filename)[-4]
+            movie_number = re.split(r'(\d+)', filename)[-8]
+            cum_mol = i+1
+            hist_data = pd.read_table(filename, sep="\s+")
+            hist_data['molecule number'] = molecule_number
+            hist_data['movie number'] = movie_number
+            hist_data['cumulative_molecule'] = cum_mol
+            dfs.append(hist_data)
+        test = pd.concat(dfs)
+        test.dropna(axis=1, how='all', inplace = True)
+        test.columns = ['Time at 532', 'Frame at 532', 'AF488 at 532', 'Cy3 at 532', 'AF647 at 532','Time at 488', 'Frame at 488', 'AF488 at 488', 'Cy3 at 488', 'AF647 at 488','Time at 488_2', 'Frame at 488_2','FRET AF488 to Cy3', 'Idealized FRET AF488 to Cy3', 'FRET AF488 to AF647', 'Idealized FRET AF488 to AF647', 'Time at 532_2', 'Frame at 532_2', 'FRET Cy3 to AF647', 'Idealized FRET Cy3 to AF647','molecule number', 'movie_number', 'cumulative_molecule']
+        test.drop(['Time at 532_2', 'Frame at 532_2', 'Time at 488_2', 'Frame at 488_2'], axis = 1, inplace = True)
+        # test['FRET at 488'] = test['Acceptor at 488']/(test['Acceptor at 488']+test['Donor at 488'])
+        # test['IntensitySum'] = 
+        return pd.DataFrame(test)
+    else:
+        print('invalid data_type, please set data_type as "hist", "TDP","transition_frequency" or "other" if using for violin or heatmap plots')
 
