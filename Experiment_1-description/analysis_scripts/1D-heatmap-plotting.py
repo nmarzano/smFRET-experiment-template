@@ -109,7 +109,9 @@ def plot_first_specified_transition(df, trans_type):
     sns.violinplot(data = df, y = 'cum_sum', x = 'treatment', scale = 'width')
     sns.stripplot(data = df, y = 'cum_sum', x = 'treatment', color ='black', alpha = 0.5)
     plt.ylabel('Time for RNA binding (s)')
+    plt.xlabel('')
     plot1.savefig(f'{output_folder}/time_until_first_{trans_type}_transition.svg', dpi = 600)
+    plt.show()
 
 to_filt = ['TREATMENT'] ######### select if you want what datasets to include in average heatmap
 
