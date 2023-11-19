@@ -25,6 +25,8 @@ colors = {
     "RNA01-AF488_col": "black", 
     "RNA09-AF488":"grey", 
 }
+
+
 ###########
 ########### plots two graphs, one with the PPR FRET and another with whatever FRET you want to look at
 ###########
