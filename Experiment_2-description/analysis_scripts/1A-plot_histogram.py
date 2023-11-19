@@ -11,6 +11,7 @@ import scipy.integrate as integrate
 from lmfit import models
 
 output_folder = "Experiment_X-description/python_results"  ### modify for each experiment
+thresh = 0.2
 
 #### the first item in the tuple will be the name that goes into the graph legend
 data_paths = {
