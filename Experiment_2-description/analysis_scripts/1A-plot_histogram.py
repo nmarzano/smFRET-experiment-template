@@ -129,7 +129,7 @@ def plot_hist_type(df, order, kind = 'kde'):
             hue_order = order,
             common_norm=False, 
             stat = 'density',
-            binwidth = 0.025,
+            binwidth = 0.05,
             fill = False, 
             kde = True,
             linewidth = 1.5, 
@@ -144,3 +144,62 @@ def plot_hist_type(df, order, kind = 'kde'):
 
 
 plot_hist_type(compiled_df, order, 'bar')
+
+##########
+########## code to calculate and plot the proportion of time each molecules spends below a defined threshold
+##########
+
+def plot_time_below_thresh(df, order, palette = 'BuPu'):
+    fig, ax = plt.subplots()
+    sns.violinplot(data = df,
+                y = 'FRET_time_below_thresh',
+                x = 'treatment_name',
+                palette = palette,
+                scale = 'width',
+                order = order)
+    sns.swarmplot(data = df,
+                y = 'FRET_time_below_thresh',
+                x = 'treatment_name',
+                color = 'grey',
+                order = order,
+                alpha = 0.25)
+    plt.xlabel('')
+    plt.ylabel('Proportion of time spent < 0.2 FRET')
+    fig.savefig(f'{output_folder}/Time_below_thresh_per_molecule.svg', dpi = 600)
+    plt.xticks(rotation=45)
+    plt.show()
+cook = []
+
+
+
+order_normal = list(reversed(order))
+for (treatment, molecule), df in compiled_df.groupby(['treatment_name', 'molecule_number']):
+    mol_total = len(df)
+    mol_below_thresh = len(df[df['FRET']<thresh])
+    percent_below_thresh = (mol_below_thresh/mol_total)*100
+    df['FRET_time_below_thresh'] = percent_below_thresh
+    df = df.iloc[[0]]
+    cook.append(df)
+cooked = pd.concat(cook)
+plot_time_below_thresh(cooked, order_normal)
+
+############
+############ code to concatenate data and reorder for plotting on x/y axis. Also normalises to max. 
+############ 
+
+timepoint = {f'{order_normal[0]}':6,f'{order_normal[1]}':12,f'{order_normal[2]}':18,f'{order_normal[3]}':24,f'{order_normal[4]}':30, f'{order_normal[5]}':36}
+
+def concat_df_fit_data(df, dict_to_organise):
+    mean_data = df.groupby('treatment_name')['FRET_time_below_thresh'].mean().reset_index()
+    std_err_data = df.groupby('treatment_name')['FRET_time_below_thresh'].sem().reset_index()
+    test = pd.merge(mean_data, std_err_data, on='treatment_name')
+    test.rename(columns={'FRET_time_below_thresh_x':'Mean','FRET_time_below_thresh_y':'Std_error'},inplace=True)
+    test['timepoint'] = test['treatment_name'].map(dict_to_organise)
+    test = test.dropna()
+    test = test.sort_values(by=['timepoint']).reset_index()
+    test['normalised'] = (test['Mean']/(test['Mean'].iloc[0]))*100
+    test.drop('index', axis = 1, inplace = True)
+    test.to_csv(f'{output_folder}/mean.csv')
+    return test
+
+poop = concat_df_fit_data(cooked, timepoint)
