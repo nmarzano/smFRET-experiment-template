@@ -45,7 +45,7 @@ compiled_df.to_csv(f'{output_folder}/Cleaned_FRET_histogram_data.csv', index = F
 ###################################################
 
 labels = {data_name:label for data_name, (label, data_path) in data_paths.items()}
-order = [f"{dict_key[4]}",f"{dict_key[3]}", f"{dict_key[2]}", f"{dict_key[1]}", f"{dict_key[0]}"] ### sets order for histogram
+order = list(reversed(dict_key))
 font = {'weight' : 'normal', 'size'   : 12 }
 matplotlib.rcParams['font.sans-serif'] = "Arial"
 matplotlib.rcParams['font.family'] = "sans-serif"
@@ -53,13 +53,11 @@ matplotlib.rc('font', **font)
 plt.rcParams['svg.fonttype'] = 'none'
 
 ####### Sets order for ridgeline plot
-data_paths_ridgeline = {
-    "1":f"{dict_key[0]}",
-    '2':f"{dict_key[1]}",
-    "3":f"{dict_key[2]}",
-    "4":f"{dict_key[3]}", 
-    "5":f"{dict_key[4]}", 
-}
+test_path = {}
+ridgeline_keys = list(range(1,len(dict_key)+1))
+str_ridgeline_keys = list(map(str, ridgeline_keys))
+data_paths_ridgeline= dict(zip(str_ridgeline_keys,dict_key))
+
 
 n_colors = len(data_paths_ridgeline)
 pal = sns.color_palette(palette='mako', n_colors=n_colors)
