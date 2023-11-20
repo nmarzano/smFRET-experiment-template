@@ -244,3 +244,45 @@ plt.ylabel('Proportion of transitions (%)')
 fig.savefig(f'{plot_export}/consecutive_transition_summary.svg', dpi = 600)
 plt.show()
 
+
+
+
+def ratio_consecutive_to_nonconsecutive(calculated_transitions_df, frames_to_plot):
+    consecutive_from_dnak_release = filt_df_to_plot(consecutive_trans, FRET_before, FRET_after,'low_to_high', frames_to_plot)
+    nonconsecutive_from_dnak_release = filt_df_to_plot(nonconsecutive_trans, FRET_before, FRET_after,'low_to_high', frames_to_plot)
+
+    test = calculated_transitions_df.iloc[consecutive_from_dnak_release].groupby('treatment_name')['molecule_number'].nunique()/(calculated_transitions_df.iloc[nonconsecutive_from_dnak_release].groupby('treatment_name')['molecule_number'].nunique())
+    testies = pd.DataFrame(test).reset_index()
+    testies.columns = ['treatment', 'prop_consecutive_dnaK_release']
+    return testies
+
+
+def prop_DnaK_release_events_are_consecutive(calculated_transitions_df, frames_to_plot):
+    consecutive_from_dnak_release = filt_df_to_plot(consecutive_trans, FRET_before, FRET_after,'low_to_high', frames_to_plot)
+    nonconsecutive_from_dnak_release = filt_df_to_plot(nonconsecutive_trans, FRET_before, FRET_after,'low_to_high', frames_to_plot)
+    test = (calculated_transitions_df.iloc[consecutive_from_dnak_release].groupby('treatment_name')['molecule_number'].nunique())/((calculated_transitions_df.iloc[nonconsecutive_from_dnak_release].groupby('treatment_name')['molecule_number'].nunique())+calculated_transitions_df.iloc[consecutive_from_dnak_release].groupby('treatment_name')['molecule_number'].nunique())
+    testies = pd.DataFrame(test).reset_index()
+    testies.columns = ['treatment', 'prop_consecutive_dnaK_release']
+    return testies
+
+
+def plot_consec_DnaK_release_with_filter(dataframe, datatype = 'Proportion'):
+    helpplease = []
+    for x, df in enumerate(range(0, 401)):
+        if datatype == 'Proportion':
+            dfs = prop_DnaK_release_events_are_consecutive(dataframe, x)
+        else:
+            dfs = ratio_consecutive_to_nonconsecutive(dataframe, x)
+        dfs['frames_to_thresh'] = x
+        helpplease.append(dfs)
+        helpplease_df = pd.concat(helpplease)
+        # melty = helpplease_df.melt(id_vars = 'treatment')
+    sns.lineplot(data = helpplease_df, x = 'frames_to_thresh', y = 'prop_consecutive_dnaK_release', hue = 'treatment', palette = 'BuPu')
+    plt.xlabel('Threshold prior to DnaK release (frames)')
+    plt.ylabel(f'{datatype} of transitions (consecutive:non-consecutive)')
+    plt.legend(title = '')
+    plt.savefig(f'{plot_export}/consecutive_transition_over_frame_threshold_{datatype}.svg', dpi = 600)
+    plt.show()
+    return
+
+plot_consec_DnaK_release_with_filter(calculated_transitions_df)
