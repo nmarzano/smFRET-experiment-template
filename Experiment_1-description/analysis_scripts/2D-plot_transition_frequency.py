@@ -7,7 +7,7 @@ import numpy as np
 import glob
 import Utilities.Data_analysis as uda
 
-output_folder = "Experiment_X-description/python_results" #### NEED TO CHANGE EACH TIME TO THE PYTHON RESULTS LEVEL
+output_folder = "Experiment_1-description/python_results" #### NEED TO CHANGE EACH TIME TO THE PYTHON RESULTS LEVEL
 
 FRET_thresh = 0.5 #### FRET value at which to filter data above or below. IF CHANGED, WILL NEED TO CHANGE ALL 0.5 VALUES (E.G. BELOW IN HEADERS) TO THE NEW VALUE
 headers_withsum =  [f"< {FRET_thresh} to < {FRET_thresh}", f"< {FRET_thresh} to > {FRET_thresh}", f"> {FRET_thresh} to > {FRET_thresh}", f"> {FRET_thresh} to < {FRET_thresh}", "sum", "sample"]

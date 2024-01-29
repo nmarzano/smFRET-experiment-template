@@ -8,7 +8,7 @@ import glob
 import functools
 import os
 
-output_folder = 'Experiment_1-KCl-titration/python_results'
+output_folder = 'Experiment_1-description/python_results'
 plot_folder = f'{output_folder}/dwell_analysis_figs'
 if not os.path.exists(plot_folder):
     os.makedirs(plot_folder)

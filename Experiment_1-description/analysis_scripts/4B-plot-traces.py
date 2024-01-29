@@ -12,7 +12,7 @@ from deepfret_nm import DeepFRET_NM
 
 
 
-output_folder = "Experiment_2-description/python_results/"  ### Change for each experiment
+output_folder = "Experiment_1-description/python_results/"  ### Change for each experiment
 plot_export = f'{output_folder}/traces/'
 if not os.path.exists(plot_export):
     os.makedirs(plot_export)
