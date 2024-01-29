@@ -22,14 +22,20 @@ output_folder = f'{input_folder}/Heatmaps-and-first-transitions'
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
     
-transition_type = 'high_to_low'   ##### select either 'low_to_high' or 'high_to_low' for plotting first specified transition
+transition_type = 'low_to_high'   ##### select either 'low_to_high' or 'high_to_low' for plotting first specified transition
+to_filt = ['TREATMENT'] ######### select what datasets you want to keep in your average heatmap
 
+
+####### import data
 compiled_df = pd.read_csv(f'{output_folder}/compiled_df.csv')
 col = pd.read_csv(f'{output_folder}/col.csv')
 normalised_data = pd.read_csv(f'{output_folder}/normalised_data.csv')
-
-
 no_filt = compiled_df['treatment_name'].unique().tolist()
+
+
+#########
+######### plot heatmaps and average heatmaps
+#########
 
 def plot_heatmap(df, gridsize, bins_hex, plot_type = 'hex'):
     for treatment, dfs in df.groupby('treatment_name'):
@@ -113,12 +119,11 @@ def plot_first_specified_transition(df, trans_type):
     plot1.savefig(f'{output_folder}/time_until_first_{trans_type}_transition.svg', dpi = 600)
     plt.show()
 
-to_filt = ['TREATMENT'] ######### select if you want what datasets to include in average heatmap
 
 plot_heatmap(compiled_df, 100, 80, 'kde')
 plot_first_specified_transition(col, transition_type)
-plot_average_FRET_over_time(normalised_data, no_filt, 'sd', 'time') ##### change to 'to_filt' to include only datasets that were mentioned above
-plot_average_FRET_over_time(normalised_data, no_filt, 'sd', 'normalised_to_event', False)  #### add True to plot subplots
+plot_average_FRET_over_time(normalised_data, no_filt, 'sd', 'time') ##### change 'no_filt' to 'to_filt' to include only datasets that were mentioned above
+plot_average_FRET_over_time(normalised_data, no_filt, 'sd', 'normalised_to_event', False)  #### replace with True to plot subplots
 
 print(col.groupby('treatment')['cum_sum'].mean())
 print(col.groupby('treatment')['cum_sum'].sem())

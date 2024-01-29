@@ -11,22 +11,23 @@ import scipy.integrate as integrate
 from lmfit import models
 import Utilities.Data_analysis as uda
 
-output_folder = "Experiment_5-IDS1_KJE-timelapse/python_results"  ### modify for each experiment
+output_folder = "Experiment_1-description/python_results"  ### modify for each experiment
 thresh = 0.2
-
+xlim_min = 6
+xlim_max = 60
 
 data_from_exp = {
-'IDS1_KJE':f'{output_folder}/mean.csv',
-'NDS1_KJE':'Experiment_4-NDS1_KJE-only_timelapse/python_results/mean.csv',
-'NDS1_KJEG':'Experiment_3-NDS1_col_timelapse/python_results/mean.csv',
-'IDS1_KJEG':'Experiment_2-IDS1_col_timelapse/python_results/mean.csv',
+'treatment1':f'{output_folder}/mean.csv',
+'treatment2':'Experiment_2-description/python_results/mean.csv',
+'treatment3':'Experiment_3-description/python_results/mean.csv',
+'treatment4':'Experiment_4-description/python_results/mean.csv',
 }
 
 colors_plot = {
-'NDS1_KJE':'black', 
-'NDS1_KJEG':'purple', 
-'IDS1_KJEG':'skyblue',
-'IDS1_KJE':'royalblue'
+'treatment1':'black', 
+'treatment2':'purple', 
+'treatment3':'skyblue',
+'treatment4':'royalblue'
 }
 
 
@@ -70,6 +71,17 @@ final = final.iloc[:, 2:]
 
 
 def plot_data_col(df, fit_type, xlim, ylim, data = 'Mean'):
+    """Plots the proportion of time each molecule spends below a threshold (defined previously in 1A-plot-histogram) as the mean +- SE as a function of time. This function
+    is predominantly designed to collate timelapse data from different experiments and present it within a single plot. It also fits a generic curve to the data, which has been 
+    defined above in fit_curve_to_plot function. 
+
+    Args:
+        df (dataframe): collated dataset of all treatments to compare
+        fit_type (func): the type of fit you wish to plot. If you want a different function, define elsewhere and call the function here to plot.
+        xlim (float): minimum x-axis value used to define fit
+        ylim (float): maximum x-axis value used to define fit
+        data (str, optional): changes if you want to plot normalised data 'normalised' or raw data 'Mean'. Defaults to 'Mean'.
+    """
     fig, ax = plt.subplots()
     for treatment, dfs in df.groupby('treatment'):
         if data == 'Mean':
@@ -86,4 +98,4 @@ def plot_data_col(df, fit_type, xlim, ylim, data = 'Mean'):
     plt.show()
     return 
 
-plot_data_col(final, guess_exponential, 6, 36, 'normalised')
+plot_data_col(final, guess_exponential, xlim_min, xlim_max, 'normalised')  #### can either be raw values 'Mean' or normalised to 100% 'normalised'.

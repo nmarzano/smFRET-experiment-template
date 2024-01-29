@@ -25,10 +25,12 @@ if not os.path.exists(output_folder):
 exposure = 0.200  # in seconds, used to normalise data to a correct unit of time rather than frame number
 frame_rate = 1/exposure  ##### used when importing heatmap data to turn frame number to a unit of time
 FRET_thresh = 0.5 #### Used to filter the threshold for transitions
-transition_type = 'high_to_low'   ##### select either 'low_to_high' or 'high_to_low' for plotting first specified transition
+transition_type = 'low_to_high'   ##### select either 'low_to_high' or 'high_to_low' for plotting first specified transition
 time_thresh  = 15 #### in seconds, used to exclude any transitions that occur less than the time_thresh from the start of the acquisition
 
 data_paths = {
+    'treatment':('treatment_name', 'Experiment_2-description/raw_data/treatment_to_plot'),
+    'treatment':('treatment_name', 'Experiment_2-description/raw_data/treatment_to_plot'),
     'treatment':('treatment_name', 'Experiment_2-description/raw_data/treatment_to_plot'),
 }
 

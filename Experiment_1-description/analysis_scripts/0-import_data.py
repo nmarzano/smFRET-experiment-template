@@ -10,7 +10,9 @@ import glob
 
 output_folder = "Experiment_X-description/raw_data/"  ### Change for each experiment
 
-input_folders = ["directory_1/",
+input_folders = [
+
+"directory_1/",
 "directory_2/",
 "directory_3/",
 "directory_4/"

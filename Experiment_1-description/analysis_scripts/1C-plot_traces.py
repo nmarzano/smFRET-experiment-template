@@ -14,6 +14,7 @@ if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
 exposure = 0.2  ### exposure in seconds
+min_trace_length = 180 ## in seconds
 
 ###################
 ################### If you want to plot all molecules with a time threshold greater than a defined point
@@ -42,7 +43,7 @@ compiled_df['Time'] = compiled_df['frames']/(1/exposure)
 compiled_df["smoothed_FRET"] = savgol_filter(compiled_df["FRET"], 5, 2) 
 
 for (treatment, molecule), df in compiled_df.groupby(['treatment_name', 'molecule_number']):
-    if df.Time.iloc[-1] > 180:
+    if df.Time.iloc[-1] > min_trace_length:
         plot, ax = plot_FRET_test(df, treatment, molecule)
         plot.savefig(f'{output_folder}/{treatment}_Trace_{molecule}.svg', dpi = 600)
     else:
@@ -50,12 +51,12 @@ for (treatment, molecule), df in compiled_df.groupby(['treatment_name', 'molecul
 
 
 ###################
-################### If you want to plot the first 20 molecules for each treatment together
+################### If you want to plot all molecules for each treatment together
 ###################
 
 test = []
 for (treatment, molecule), df in compiled_df.groupby(['treatment_name', 'molecule_number']):
-    if df.Time.iloc[-1] > 180:
+    if df.Time.iloc[-1] > min_trace_length:
         test.append(df)
     else:
         continue
@@ -68,9 +69,8 @@ for treatment, df in testies.groupby('treatment_name'):
     renumbered_mol.append(df)
 compiled_df_long_renumbered = pd.concat(renumbered_mol)
 
-
+# Plots all molecules with a threshold longer than a defined length. It is arranged so that each plot is always 4 molecules wide and as long as there are molecules to fill
 for treatment, df in compiled_df_long_renumbered.groupby('treatment_name'):
-    # df_filt = df[df['Change_Count']>21]
     df_filt_mol_list = list(df['Change_Count'].unique())
     nrow = math.ceil(len(df_filt_mol_list)/4)
     fig, axes = plt.subplots(nrow, 4, figsize = (16, 2*nrow), sharex = True, sharey = True)
@@ -88,11 +88,10 @@ for treatment, df in compiled_df_long_renumbered.groupby('treatment_name'):
         axes[i].set_xlabel('Time (s)')
         axes[i].set_ylabel('FRET')
         axes[i].set_title(f"{treatment}")
-        # axes[i].get_legend().remove()
     plt.show()
 
 ##############
-############## Code to import data and concatenate all molecule data for sequential plotting
+############## Code to import data and concatenate all molecule data for sequential plotting. Useful if you want to plot a single trace of interest.
 ##############
 
 

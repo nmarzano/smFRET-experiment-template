@@ -8,18 +8,19 @@ import glob
 import os
 from Utilities.Data_analysis import filter_TDP, file_reader, count_filt_mol
 
-output_folder = 'Experiment_1-Comparison-of-HtpG-mutants/python_results'
+output_folder = 'Experiment_1-description/python_results'
 plot_export = f'{output_folder}/synchronised_transitions/'
 if not os.path.exists(plot_export):
     os.makedirs(plot_export)
 compiled_data = pd.read_csv(f'{output_folder}/Cleaned_FRET_histogram_data.csv')
-FRET_value = 0.2 #### the proportion of molecules that travel below this threshold will be counted
-exposure = 0.2 # in seconds
-order = ['KJE', 'KJEG', 'KJEG_wt', 'KJEG_e34a']
-list_to_drop = ['']
-frames_to_plot = 50
-FRET_before = 0.5
-FRET_after = 0.5
+FRET_value = 0.5 #### the proportion of molecules that travel below this threshold will be counted
+exposure = 0.2 # imaging exposure in seconds
+order = ['treatment1', 'treatment2', 'treatment3', 'treatment4']
+list_to_drop = [''] ##### add treatments here that you want to exclude from analysis
+frames_to_plot = 50  ###### This value is used for two things. (1) This is the number of frames either side of the transition point that will be plotted. (2) This is the minimum
+########################### number of frames that a FRET state must exist prior to a transition in order for it to be plotted (this will generally exclude noisy molecules).
+FRET_before = 0.5 #### FRET state before a transition
+FRET_after = 0.5 ##### FRET state after the transition
 
 ###########
 ########### Calculates the dwell time for each idealized FRET state based on the HMM fits and then appends the dwell duration to the cleaned FRET histogram data.
@@ -207,8 +208,10 @@ plot_synchronised_transition(calculated_transitions_df, dnak_stable_binding, exp
 
 
 ############
-############ Code past this point is to investigate the difference between consecutive and non-consecutive transitions
+############ Code past this point is to investigate the difference between consecutive and non-consecutive transitions. At the moment, this code only looks at 
+############ consecutive or non-consecutive low-to-high transitions. This can be easily changed by modifing the 'low_to_high' variables below to 'high_to_low'.
 ############
+
 col = []
 for treatment, df in calculated_transitions_df.groupby('treatment_name'):
     transition_data = df[df['transition_point']==True]
@@ -245,6 +248,9 @@ fig.savefig(f'{plot_export}/consecutive_transition_summary.svg', dpi = 600)
 plt.show()
 
 
+###############
+###############
+###############
 
 
 def ratio_consecutive_to_nonconsecutive(calculated_transitions_df, frames_to_plot):
