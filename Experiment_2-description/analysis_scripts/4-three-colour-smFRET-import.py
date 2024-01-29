@@ -10,13 +10,13 @@ import glob
 import re
 from deepfret_nm import DeepFRET_NM
 
-output_folder = "Experiment_2-description/raw_data/"  ### Change for each experiment
+output_folder = "Experiment_1-description/raw_data/"  ### Change for each experiment
 
 input_folders = [
-'Z:/Chaperone_subgroup/NickM/PPR/TIRF/230620_RNA09-AF488/Chan1_RNA09-AF488_20nM_steady/Channel532 - andor,488 - 200ms_Seq0000/Chan1_RNA09-AF488_20nM_steady_BC_all/', 
-'Z:/Chaperone_subgroup/NickM/PPR/TIRF/230620_RNA09-AF488/Chan2_RNA09-AF488_20nM_duplexto-DNA02/Channel532 - andor,488 - 200ms_Seq0000/RNA09-DNA02-duplex_pprfret/', 
-'Z:/Chaperone_subgroup/NickM/PPR/TIRF/230620_RNA09-AF488/Chan3_RNA01-AF488_20nM_steady/Channel532 - andor,488 - 200ms_Seq0000/RNA01-AF488_20nM_pprfret/', 
-'Z:/Chaperone_subgroup/NickM/PPR/TIRF/230620_RNA09-AF488/Chan3_RNA01-AF488_20nM_steady/Channel532 - andor,488 - 200ms_Seq0000/RNA01-AF488_combined-with-230214_pprfret/', 
+'directory_1/', 
+'directory_2/', 
+'directory_3/', 
+'directory_4/', 
 ]
 
 def move_folders(input_folders, filetype, output_folder):

@@ -8,14 +8,15 @@ import glob
 import os
 from Utilities.Data_analysis import filter_TDP, file_reader, count_filt_mol
 
-output_folder = 'Experiment_2-description/python_results'
+output_folder = 'Experiment_1-description/python_results'
 plot_export = f'{output_folder}/synchronised_transitions/'
 if not os.path.exists(plot_export):
     os.makedirs(plot_export)
 compiled_df_HMM = pd.read_csv(f'{output_folder}/compiled_df_HMM.csv')
-FRET_value = 0.2 #### the proportion of molecules that travel below this threshold will be counted
+
+FRET_value = 0.5 #### the proportion of molecules that travel below this threshold will be counted
 exposure = 0.2 # in seconds
-order = ['RNA01-AF488_col', 'RNA09-AF488']
+order = ['treatment1', 'treatment2']
 list_to_drop = ['']
 frames_to_plot = 50
 FRET_before = 0.5
@@ -164,7 +165,7 @@ plot_synchronised_transition(calculated_transitions_df, dnak_stable_release, exp
 
 
 def plot_synchronised_fluorescence(dfs, index_to_plot, exposure_seconds, list_to_drop, frame_from_trans = 80, label = ''):
-    """plots the FRET values either side of a transition type of interest
+    """plots the FRET values and total fluorescence of all dyes following excitation at 488 nm either side of a transition type of interest
 
     Args:
         dfs (df): dataframe containing the raw FRET values (generated after the calculate dwells function)

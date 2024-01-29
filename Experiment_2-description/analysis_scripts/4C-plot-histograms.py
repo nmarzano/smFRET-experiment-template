@@ -12,21 +12,24 @@ from deepfret_nm import DeepFRET_NM
 
 
 
-output_folder = "Experiment_2-description/python_results/"  ### Change for each experiment
+output_folder = "Experiment_1-description/python_results/"  ### Change for each experiment
 plot_export = f'{output_folder}/histograms/'
 if not os.path.exists(plot_export):
     os.makedirs(plot_export)
 
+FRET_thresh = 0.5
+
+###### import data
 compiled_df_HMM = pd.read_csv(f'{output_folder}/compiled_df_HMM.csv')
-FRET_bound = compiled_df_HMM[compiled_df_HMM['FRET Cy3 to AF647']>0.5]
-compiled_df_HMM['bound'] = np.where(compiled_df_HMM['FRET Cy3 to AF647']>0.5, 'RNA-bound', 'Unbound')
+
+###### Identify when molecule is in a certain state (e.g., bound or unbound) based on FRET efficiency and label when it is in that state.
+FRET_bound = compiled_df_HMM[compiled_df_HMM['FRET Cy3 to AF647']>FRET_thresh]
+compiled_df_HMM['bound'] = np.where(compiled_df_HMM['FRET Cy3 to AF647']>FRET_thresh, 'RNA-bound', 'Unbound')
 
 colors = {
-    "RNA01-AF488_col": "black", 
-    "RNA09-AF488":"grey", 
+    "treatment1": "black", 
+    "treatment2":"grey", 
 }
-
-
 ###########
 ########### plots two graphs, one with the PPR FRET and another with whatever FRET you want to look at
 ###########
@@ -192,9 +195,6 @@ def plot_each_intensity(df, treatment):
                      ax = axes[i], 
                      legend = True)
         axes[i].set_title(f'{label} for {treatment}')
-        # handles, labels = plt.gca().get_legend_handles_labels()
-        # by_label = dict(zip(labels, handles))
-        # axes[i].legend(['Unbound', 'Bound'], [by_label[key] for key in ['Unbound', 'RNA-bound']])
     axes[2].set_xlabel('Total fluorescence (a.u.)')
     plt.tight_layout()
     plt.xlim(-5000, 20000)

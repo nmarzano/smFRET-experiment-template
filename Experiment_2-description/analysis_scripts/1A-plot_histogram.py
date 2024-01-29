@@ -52,48 +52,50 @@ matplotlib.rcParams['font.family'] = "sans-serif"
 matplotlib.rc('font', **font)
 plt.rcParams['svg.fonttype'] = 'none'
 
+
+def ridgeline_plot(df, dict_key, font, palette):
 ####### Sets order for ridgeline plot
-test_path = {}
-ridgeline_keys = list(range(1,len(dict_key)+1))
-str_ridgeline_keys = list(map(str, ridgeline_keys))
-data_paths_ridgeline= dict(zip(str_ridgeline_keys,dict_key))
+    test_path = {}
+    ridgeline_keys = list(range(1,len(dict_key)+1))
+    str_ridgeline_keys = list(map(str, ridgeline_keys))
+    data_paths_ridgeline= dict(zip(str_ridgeline_keys,dict_key))
 
-
-n_colors = len(data_paths_ridgeline)
-pal = sns.color_palette(palette='mako', n_colors=n_colors)
-matplotlib.rc('font', **font)
-plt.rcParams['svg.fonttype'] = 'none'
-g = sns.FacetGrid(compiled_df, row='treatment_name', hue='treatment_name', aspect=10, height=5, palette=pal)
+    n_colors = len(data_paths_ridgeline)
+    pal = sns.color_palette(palette=palette, n_colors=n_colors)
+    matplotlib.rc('font', **font)
+    plt.rcParams['svg.fonttype'] = 'none'
+    g = sns.FacetGrid(df, row='treatment_name', hue='treatment_name', aspect=10, height=5, palette=pal)
 # then we add the densities kdeplots for each condition
-g.map(sns.kdeplot, 'FRET',
+    g.map(sns.kdeplot, 'FRET',
       bw_adjust=1, clip_on=False,
       fill=True, alpha=1, linewidth=10)
-# here we add a white line that represents the contour of each kdeplot
-g.map(sns.kdeplot, 'FRET', 
+# here we add a black line that represents the contour of each kdeplot
+    g.map(sns.kdeplot, 'FRET', 
       bw_adjust=1, clip_on=False, 
-      color="white", linewidth=6)
+      color="black", linewidth=10)
 # here we add a horizontal line for each plot
-g.map(plt.axhline, y=0,
+    g.map(plt.axhline, y=0,
       lw=2, clip_on=False)
 # we loop over the FacetGrid figure axes (g.axes.flat) and add the condition as text with the right color
 # notice how ax.lines[-1].get_color() enables you to access the last line's color in each matplotlib.Axes
-for i, ax in enumerate(g.axes.flat):
-    ax.text(0, .5, data_paths_ridgeline[f'{i+1}'],
+    for i, ax in enumerate(g.axes.flat):
+        ax.text(-0.5, .5, data_paths_ridgeline[f'{i+1}'],
             fontweight='bold', fontsize=100,
             color=ax.lines[-1].get_color())
-    ax.set_facecolor((0, 0, 0, 0))  ### removes background so KDE plots are not obstructed when stacked
+        ax.set_facecolor((0, 0, 0, 0))  ### removes background so KDE plots are not obstructed when stacked
 # we use matplotlib.Figure.subplots_adjust() function to get the subplots to overlap
-g.fig.subplots_adjust(hspace=-0.7)
+    g.fig.subplots_adjust(hspace=-0.7)
 # eventually we remove axes titles, yticks and spines
-g.set_titles("")
-g.set(yticks=([]))
-g.despine(bottom=True, left=True)
-plt.setp(ax.get_xticklabels(), fontsize=100, fontweight='bold')
-plt.xlabel('FRET', fontweight='bold', fontsize=100)
-plt.xlim(-.4, 1.2)
-g.savefig(f'{output_folder}/Histogram-ridgeline.svg', dpi = 600)
-plt.show()
+    g.set_titles("")
+    g.set(yticks=([]))
+    g.despine(bottom=True, left=True)
+    plt.setp(ax.get_xticklabels(), fontsize=100, fontweight='bold')
+    plt.xlabel('FRET', fontweight='bold', fontsize=100)
+    plt.xlim(-.4, 1.2)
+    g.savefig(f'{output_folder}/Histogram-ridgeline.svg', dpi = 600)
+    plt.show()
 
+ridgeline_plot(compiled_df, dict_key, font, 'BuPu')
 #################
 ################# Code to plot regular histogram
 #################
@@ -147,6 +149,18 @@ plot_hist_type(compiled_df, order, 'bar')
 ##########
 ########## code to calculate and plot the proportion of time each molecules spends below a defined threshold
 ##########
+filt_df = []
+order_normal = list(reversed(order))
+for (treatment, molecule), df in compiled_df.groupby(['treatment_name', 'molecule_number']):
+    mol_total = len(df)
+    mol_below_thresh = len(df[df['FRET']<thresh])
+    percent_below_thresh = (mol_below_thresh/mol_total)*100
+    df['FRET_time_below_thresh'] = percent_below_thresh
+    df = df.iloc[[0]]
+    filt_df.append(df)
+filt_dfs = pd.concat(cook)
+
+
 
 def plot_time_below_thresh(df, order, palette = 'BuPu'):
     fig, ax = plt.subplots()
@@ -163,30 +177,33 @@ def plot_time_below_thresh(df, order, palette = 'BuPu'):
                 order = order,
                 alpha = 0.25)
     plt.xlabel('')
-    plt.ylabel('Proportion of time spent < 0.2 FRET')
+    plt.ylabel(f'Proportion of time spent < {thresh} FRET')
     fig.savefig(f'{output_folder}/Time_below_thresh_per_molecule.svg', dpi = 600)
     plt.xticks(rotation=45)
     plt.show()
-cook = []
 
 
 
-order_normal = list(reversed(order))
-for (treatment, molecule), df in compiled_df.groupby(['treatment_name', 'molecule_number']):
-    mol_total = len(df)
-    mol_below_thresh = len(df[df['FRET']<thresh])
-    percent_below_thresh = (mol_below_thresh/mol_total)*100
-    df['FRET_time_below_thresh'] = percent_below_thresh
-    df = df.iloc[[0]]
-    cook.append(df)
-cooked = pd.concat(cook)
-plot_time_below_thresh(cooked, order_normal)
+
+plot_time_below_thresh(filt_dfs, order_normal)
 
 ############
 ############ code to concatenate data and reorder for plotting on x/y axis. Also normalises to max. 
 ############ 
 
-timepoint = {f'{order_normal[0]}':6,f'{order_normal[1]}':12,f'{order_normal[2]}':18,f'{order_normal[3]}':24,f'{order_normal[4]}':30, f'{order_normal[5]}':36}
+timepoint = {
+f'{order_normal[0]}':6,
+f'{order_normal[1]}':12,
+f'{order_normal[2]}':18,
+f'{order_normal[3]}':24,
+f'{order_normal[4]}':30, 
+f'{order_normal[5]}':36,
+f'{order_normal[6]}':42,
+f'{order_normal[7]}':48,
+f'{order_normal[8]}':54,
+f'{order_normal[9]}':60,
+
+}
 
 def concat_df_fit_data(df, dict_to_organise):
     mean_data = df.groupby('treatment_name')['FRET_time_below_thresh'].mean().reset_index()
@@ -201,4 +218,4 @@ def concat_df_fit_data(df, dict_to_organise):
     test.to_csv(f'{output_folder}/mean.csv')
     return test
 
-poop = concat_df_fit_data(cooked, timepoint)
+timepoint_df = concat_df_fit_data(filt_dfs, timepoint)

@@ -8,7 +8,7 @@ import glob
 import functools
 import os
 
-output_folder = 'Experiment_1-KCl-titration/python_results'
+output_folder = 'Experiment_1-description/python_results'
 plot_folder = f'{output_folder}/dwell_analysis_figs'
 if not os.path.exists(plot_folder):
     os.makedirs(plot_folder)
@@ -172,6 +172,7 @@ def plot_binding_release(df, chaperone = 'binding', order = False, palette = pal
     plt.ylabel(f'{ylabel}')
     plot1.savefig(f'{plot_folder}/{title}.svg', dpi = 600)
     plt.show()
+
 
 plot_binding_release(org_chap_events, 'binding_and_release', order)
 #################
