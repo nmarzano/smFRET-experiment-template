@@ -16,6 +16,7 @@ saved_folders = f'{output_folder}/organized_csvs/'
 if not os.path.exists(saved_folders):
     os.makedirs(saved_folders)
 
+FRET_thresh = 0.5
 
 dict_to_concat = {
     'treatment1':'Experiment_1-description/raw_data/treatment1_data',
@@ -37,8 +38,8 @@ compiled_df['Cy3 FRET Lee'] = (compiled_df['Cy3 at 488'])/(compiled_df['Cy3 at 4
 compiled_df['probe_summed_fluorescence'] = compiled_df['Cy3 at 488'] + compiled_df['AF488 at 488'] + compiled_df['AF647 at 488']
 
 
-FRET_bound = compiled_df[compiled_df['FRET Cy3 to AF647']>0.5]
-compiled_df['bound'] = np.where(compiled_df['FRET Cy3 to AF647']>0.5, 'RNA-bound', 'Unbound')
+FRET_bound = compiled_df[compiled_df['FRET Cy3 to AF647']>FRET_thresh]
+compiled_df['bound'] = np.where(compiled_df['FRET Cy3 to AF647']>FRET_thresh, 'RNA-bound', 'Unbound')
 print(FRET_bound.groupby('treatment')['cumulative_molecule'].nunique())
 print(compiled_df.groupby('treatment')['cumulative_molecule'].nunique())
 compiled_df_filt = compiled_df.drop(['Frame at 532'], axis = 1)
