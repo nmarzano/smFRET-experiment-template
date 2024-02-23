@@ -158,7 +158,7 @@ for (treatment, molecule), df in compiled_df.groupby(['treatment_name', 'molecul
     df['FRET_time_below_thresh'] = percent_below_thresh
     df = df.iloc[[0]]
     filt_df.append(df)
-filt_dfs = pd.concat(cook)
+filt_dfs = pd.concat(filt_df)
 
 
 
