@@ -292,3 +292,22 @@ def plot_consec_DnaK_release_with_filter(dataframe, datatype = 'Proportion'):
     return
 
 plot_consec_DnaK_release_with_filter(calculated_transitions_df)
+
+
+first_consecutive_transition = calculated_transitions_df.iloc[consecutive_from_dnak_release]
+first_nonconsecutive_transition = calculated_transitions_df.iloc[nonconsecutive_from_dnak_release]
+first_consecutive_transition['consec'] = True
+first_nonconsecutive_transition['consec'] = False
+combined_consec_nonconsec = first_consecutive_transition.append(first_nonconsecutive_transition)
+
+def plot_FRET_after_release(plot_export, df):
+    fig, ax = plt.subplots()
+    sns.violinplot(data = df, y = 'FRET_after', x = 'treatment_name', split=True, hue = 'consec', scale = 'width', palette = 'BuPu', inner = 'quart')
+    plt.xlabel('')
+    plt.legend(title = '')
+    plt.ylabel('FRET state after FRET increase')
+    plt.xticks(rotation=45)
+    plt.savefig(f'{plot_export}/FRET_state_after_increase.svg', dpi=600)
+    plt.show()
+
+plot_FRET_after_release(plot_export, combined_consec_nonconsec)
