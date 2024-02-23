@@ -20,13 +20,14 @@ TDP = pd.read_csv(filename, header="infer")
 def plot(treatment):
     plt.rcParams['svg.fonttype'] = 'none'
     plot1 = plt.figure(figsize = (6, 6))
-    plot1 = sns.JointGrid(data = treatment, x = treatment["FRET_before"], y = treatment["FRET_after"], xlim = (0,1.2), ylim = (0, 1.2))
-    plot1.plot_joint(sns.kdeplot, cmap="PuBuGn", shade=bool, cbar=False, cbar_kws={'format': '%.0f%%', 'ticks': [0, 100]}, thresh=0.07, gridsize = 200)
+    plot1 = sns.JointGrid(data = treatment, x = treatment["FRET_before"], y = treatment["FRET_after"], xlim = (0,1), ylim = (0, 1))
+    plot1.plot_joint(sns.kdeplot, cmap="BuPu", shade=bool, cbar=False, cbar_kws={'format': '%.0f%%', 'ticks': [0, 100]}, thresh=0.05, gridsize = 100)
+    plot1.plot_joint(sns.kdeplot, thresh=0.05, gridsize = 100, color='black')
     plot1.ax_joint.set_xticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
     plot1.ax_joint.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
-    plot1.plot_marginals(sns.histplot, kde=True, bins=10)
-    plot1.ax_joint.set_facecolor("#404040") # to change the colour of the background
-    sns.set(style = 'whitegrid', font_scale = 1.5)
+    plot1.plot_marginals(sns.histplot, kde=True, bins=10, color='black', fill=False)
+    # plot1.ax_joint.set_facecolor("grey") # to change the colour of the background
+    sns.set(style = 'ticks', font_scale = 1.5)
     plt.show()
     return plot1
 
