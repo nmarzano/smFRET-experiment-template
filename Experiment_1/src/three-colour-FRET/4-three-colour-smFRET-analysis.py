@@ -1,5 +1,5 @@
-from src.plotting_scripts import threecolour_trace_histogram_plots as pa
-from src.plotting_scripts import threecolour_sync_transition_plot as pb
+from smfret.src.plotting_scripts import threecolour_trace_histogram_plots as pa
+from smfret.src.plotting_scripts import threecolour_sync_transition_plot as pb
 
 if __name__ == "__main__":
 

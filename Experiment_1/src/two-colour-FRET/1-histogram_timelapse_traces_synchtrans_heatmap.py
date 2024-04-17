@@ -1,10 +1,10 @@
-from src.plotting_scripts import histogram_plots as pa
-from src.plotting_scripts import timelapse_plots as pb
-from src.plotting_scripts import traces_plot as pc
-from src.plotting_scripts import heatmap_liveflow_plots as pe
-from src.plotting_scripts import heatmap_liveflow_plots as pf
-from src.plotting_scripts import synchronised_transition_plots as pg
-from src.plotting_scripts import gaussian_plots as ph
+from smfret.src.plotting_scripts import histogram_plots as pa
+from smfret.src.plotting_scripts import timelapse_plots as pb
+from smfret.src.plotting_scripts import traces_plot as pc
+from smfret.src.plotting_scripts import heatmap_liveflow_plots as pe
+from smfret.src.plotting_scripts import heatmap_liveflow_plots as pf
+from smfret.src.plotting_scripts import synchronised_transition_plots as pg
+from smfret.src.plotting_scripts import gaussian_plots as ph
 
 import glob as glob
 import os as os

@@ -1,7 +1,7 @@
-from src.plotting_scripts import TDP_plots as pa
-from src.plotting_scripts import dwelltime_plots as pb
-from src.plotting_scripts import dwelltime_plots as pc
-from src.plotting_scripts import residence_time_plots as pe
+from smfret.src.plotting_scripts import TDP_plots as pa
+from smfret.src.plotting_scripts import dwelltime_plots as pb
+from smfret.src.plotting_scripts import dwelltime_plots as pc
+from smfret.src.plotting_scripts import residence_time_plots as pe
 
 if __name__ == "__main__":
 
