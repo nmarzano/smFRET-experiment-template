@@ -13,7 +13,7 @@ import os as os
 if __name__ == "__main__":
 
     output_folder = "Experiment_1-description/python_results"
-
+    FRET_thresh = 0.5
     data_paths = {
         "6min":("6min", "treatment/"),
         "12min":("12min", "treatment/"),
@@ -37,7 +37,7 @@ if __name__ == "__main__":
         "treatment_5":"darkviolet"
     }
 
-    compiled_df, filt_dfs = pa.master_histogram_func(data_paths, output_folder=output_folder, thresh=0.3)
+    compiled_df, filt_dfs = pa.master_histogram_func(data_paths, output_folder=output_folder, thresh=FRET_thresh, timepoint=False)
 
     # -------------------- combine timelapse data from different treatments and scripts -----------------------------------------------
 
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     }
 
     pb.master_timelapse_func(data_from_exp, 
-                             thresh=0.3, 
+                             thresh=FRET_thresh, 
                              xlim_min=6, 
                              xlim_max=60, 
                              output_folder=output_folder, 
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     pe.master_heatmap_processing_func(data_paths_liveflow, 
                                 input_folder=output_folder, 
                                 exposure=0.200, 
-                                FRET_thresh=0.3, 
+                                FRET_thresh=FRET_thresh, 
                                 transition_type=transition_type, 
                                 time_thresh=15, 
                                 injection_time=15)
@@ -108,8 +108,8 @@ if __name__ == "__main__":
                                         output_folder=output_folder, 
                                         exposure=0.2, 
                                         frames_to_plot=50, 
-                                        FRET_before=0.3, 
-                                        FRET_after=0.3, 
+                                        FRET_before=FRET_thresh, 
+                                        FRET_after=FRET_thresh, 
                                         datatype="Proportion", 
                                         filt=False, 
                                         palette='BuPu')#### datatype could be ratio
