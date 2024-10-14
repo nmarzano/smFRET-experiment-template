@@ -37,7 +37,28 @@ if __name__ == "__main__":
         "treatment_5":"darkviolet"
     }
 
-    compiled_df, filt_dfs = pa.master_histogram_func(data_paths, output_folder=output_folder, thresh=FRET_thresh, timepoint=False)
+    compiled_df, filt_dfs = pa.master_histogram_func('test', output_folder=output_folder, thresh=FRET_thresh, timepoint=False)
+
+    compiled_df.groupby('treatment_name')['unique_id'].nunique()
+
+    
+    # --------------------------------- synchronised transitions ------------------------------------------
+    order = list(compiled_df['treatment_name'].unique())
+    list_to_drop = ['']
+    filtered_list = [i for i in order if i not in list_to_drop]
+
+    percent_trans_meet_criteria_df, calculated_transitions_df, consecutive_from_dnak_release, nonconsecutive_from_dnak_release, filt_data, filt_data2 = pg.master_plot_synchronised_transitions(order=order, 
+                                        output_folder=output_folder, 
+                                        exposure=0.2, 
+                                        frames_to_plot=50, 
+                                        FRET_before=FRET_thresh, 
+                                        FRET_after=FRET_thresh, 
+                                        datatype="Proportion", 
+                                        filt=True, 
+                                        palette='BuPu') #### datatype could be ratio
+
+    percent_trans_meet_criteria_df_sorted = percent_trans_meet_criteria_df.sort_values('treatment')
+    percent_trans_meet_criteria_df_sorted.to_csv(f'{output_folder}/controlled_transitions.csv')
 
     # -------------------- combine timelapse data from different treatments and scripts -----------------------------------------------
 
@@ -96,24 +117,6 @@ if __name__ == "__main__":
                             transition_type=transition_type, 
                             gridsize=100, 
                             binshex=80)
-
-
-
-    # --------------------------------- synchronised transitions ------------------------------------------
-    order = list(data_paths.keys())
-    list_to_drop = ['']
-    filtered_list = [i for i in order if i not in list_to_drop]
-
-    percent_trans_meet_criteria_df, calculated_transitions_df, consecutive_from_dnak_release, nonconsecutive_from_dnak_release = pg.master_plot_synchronised_transitions(order=order, 
-                                        output_folder=output_folder, 
-                                        exposure=0.2, 
-                                        frames_to_plot=50, 
-                                        FRET_before=FRET_thresh, 
-                                        FRET_after=FRET_thresh, 
-                                        datatype="Proportion", 
-                                        filt=False, 
-                                        palette='BuPu')#### datatype could be ratio
-
 
 
     # --------------------------- gaussian fitting and plottting proportion of populations over time -------------------------------
