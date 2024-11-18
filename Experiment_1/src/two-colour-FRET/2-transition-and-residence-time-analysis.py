@@ -15,7 +15,12 @@ if __name__ == "__main__":
                             FRET_to_filt_tdp=transition_threshold)
 
 
-    pi.master_TDP_plot(input_folder=output_folder, filt=True)
+    TDP_palette = {order[0]:'BuPu',
+                   order[1]:'BuPu',
+                   order[2]:'BuPu',
+                   order[3]:'BuPu'}
+    
+    pi.master_TDP_plot(TDP_palette, input_folder=output_folder, filt=True, if_chap=False)
 
 
     # ----------------------------- plot dwell time data (e.g. bind-and-release, FRET before or after transition) -----------------------
