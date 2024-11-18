@@ -37,7 +37,7 @@ if __name__ == "__main__":
         "treatment_5":"darkviolet"
     }
 
-    compiled_df, filt_dfs = pa.master_histogram_func('test', output_folder=output_folder, thresh=FRET_thresh, timepoint=False)
+    compiled_df, filt_dfs = pa.master_histogram_func('test', output_folder=output_folder, thresh=FRET_thresh, swarmplot=False)
 
     compiled_df.groupby('treatment_name')['unique_id'].nunique()
 
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     list_to_drop = ['']
     filtered_list = [i for i in order if i not in list_to_drop]
 
-    percent_trans_meet_criteria_df, calculated_transitions_df, consecutive_from_dnak_release, nonconsecutive_from_dnak_release, filt_data, filt_data2 = pg.master_plot_synchronised_transitions(order=order, 
+    percent_trans_meet_criteria_df, calculated_transitions_df, consecutive_from_dnak_release, nonconsecutive_from_dnak_release, filt_data, filt_data2, combined_consec_nonconsec = pg.master_plot_synchronised_transitions(order=order, 
                                         output_folder=output_folder, 
                                         exposure=0.2, 
                                         frames_to_plot=50, 
@@ -55,7 +55,8 @@ if __name__ == "__main__":
                                         FRET_after=FRET_thresh, 
                                         datatype="Proportion", 
                                         filt=True, 
-                                        palette='BuPu') #### datatype could be ratio
+                                        palette='BuPu', 
+                                        add_time=20) #### datatype could be ratio
 
     percent_trans_meet_criteria_df_sorted = percent_trans_meet_criteria_df.sort_values('treatment')
     percent_trans_meet_criteria_df_sorted.to_csv(f'{output_folder}/controlled_transitions.csv')
