@@ -5,9 +5,9 @@ from smfret.src.plotting_scripts import residence_time_plots as pl
 
 if __name__ == "__main__":
 
-    output_folder = 'additional_mismatches/python_results'
-    order = ['']
-    transition_threshold = 0.5
+    output_folder = 'Fig2_mutants-and-radicicol/python_results'
+    order = ['IDS1_KJE', 'IDS1_KJEG', 'IDS1_KJEGE34A', 'IDS1_KJEGr355l', 'IDS1_rad']
+    transition_threshold = 0.3
     # ------------------------------- generate transitions and plot TDPs ----------------------------------------------------------------
     pi.master_tdp_cleanup_func(output_folder=output_folder, 
                             exposure=0.2, 
@@ -18,7 +18,8 @@ if __name__ == "__main__":
     TDP_palette = {order[0]:'BuPu',
                    order[1]:'BuPu',
                    order[2]:'BuPu',
-                   order[3]:'BuPu'}
+                   order[3]:'BuPu', 
+                   order[4]:'BuPu'}
     
     pi.master_TDP_plot(TDP_palette, input_folder=output_folder, filt=True, if_chap=False)
 
@@ -37,9 +38,9 @@ if __name__ == "__main__":
                         event='binding_and_release'
     )     
 
-    compiled_df.groupby('treatment_name')['molecule_number'].nunique()
-    bind_release_col.groupby('treatment')['n'].max()
-    proportion_dynamic =  bind_release_col.groupby('treatment')['n'].max()/compiled_df.groupby('treatment_name')['molecule_number'].nunique()
+    # compiled_df.groupby('treatment_name')['molecule_number'].nunique()
+    # bind_release_col.groupby('treatment')['n'].max()
+    # proportion_dynamic =  bind_release_col.groupby('treatment')['n'].max()/compiled_df.groupby('treatment_name')['molecule_number'].nunique()
 
     # ----------------------------- plot transition frequence data ---------------------------------------------------------------
 
@@ -55,20 +56,23 @@ if __name__ == "__main__":
         data_paths_violin[treatment] = f"{output_folder}/Dwell_times/Filtered_dwelltime_{treatment}.csv"
 
     colors_violin = {
-        'RNA01': 'black', 
-        'RNA09':"#ee9b00", 
-        'RNA10':"#ca6702", 
-        'RNA22':"#ae2012", 
-        'RNA22duplex':"royalblue",
-        # 'DNA02':"grey"
+        "IDS1_KJE": "#c9ddf1", 
+        "IDS1_KJEG":"#6999d1", 
+        "IDS1_KJEGE34A":"#8c95c5", 
+        "IDS1_KJEGr355l":"#8c5fa7", 
+        "IDS1_rad":"#f26323"
     }
 
-    final, collated, cumulative_dwell_filt, halftime_summary = pl.master_residence_time_func(output_folder, 
-                                                                        data_paths_violin, 
-                                                                        order,
-                                                                        palette='BuPu', 
-                                                                        FRET_thresh=transition_threshold, 
-                                                                        binwidth=10, 
-                                                                        cumulative_hist_binwidth=1, 
-                                                                        fit_xlim=300, 
-                                                                        plot_xlim=100)
+    
+    final, collated, cumulative_dwell_filt, fits_df, halftime_summary = pl.master_residence_time_func(output_folder,
+                                                                    data_paths_violin,
+                                                                    order,
+                                                                    palette=colors_violin,
+                                                                    FRET_thresh=transition_threshold,
+                                                                    binwidth=10,
+                                                                    cumulative_hist_binwidth=1,
+                                                                    fit_xlim=300,
+                                                                    plot_xlim=100,
+                                                                    func='both',
+                                                                    biexponential=True
+                                                                    )
