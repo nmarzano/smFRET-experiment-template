@@ -174,3 +174,29 @@ if __name__ == "__main__":
                                                     num_points=500, 
                                                     fret_values=(0.05, 0.075), 
                                                     distance_to_mark=38)
+
+
+#    # --------------------------- plot FRET heatmaps  -----------------------------------------------
+
+    timepoint = {'0min':0,
+                 '6min':6,
+                 '12min':12, 
+                 '18min':18, 
+                 '24min':24, 
+                 '30min':30, 
+                 '36min':36, 
+                 '42min':42, 
+                 '48min':48, 
+                 '54min':54, 
+                 '60min':60, 
+                 }
+    
+    protein_palette = {'IDS1':'BuPu', 
+               'IDS2':'Blues', 
+               'CDS1':'Oranges', 
+               'NDS1':'Greens'}
+
+    compiled_df_mapped, filt_dfs_mapped = pa.timelapse_mapping(output_folder, timepoint)
+
+    pa.heatmap_timelapse(output_folder=output_folder, compiled_df=compiled_df_mapped, palette=protein_palette)
+    compiled_df_mapped[compiled_df_mapped['treatment_name'].str.contains('native', case=False, na=False)]
