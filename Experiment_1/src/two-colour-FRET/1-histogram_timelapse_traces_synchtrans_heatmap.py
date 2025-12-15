@@ -76,6 +76,10 @@ if __name__ == "__main__":
                            palette=colors, 
                            list_to_keep=['IDS1_KJE', 'IDS1_KJEG', 'IDS1_rad'])
 
+
+    pg.TwoD_heatmap(filt_data, output_folder, colors) #filt_data for consecutive transitions, filt_data2 for non-consecutive transitions
+
+
     # -------------------- combine timelapse data from different treatments and scripts -----------------------------------------------
 
     timepoint = {'6min':6,
@@ -172,7 +176,7 @@ if __name__ == "__main__":
                                                     R0=51, 
                                                     distance_range=(0, 120), 
                                                     num_points=500, 
-                                                    fret_values=(0.05, 0.075), 
+                                                    fret_values=(0.6, 0.7), 
                                                     distance_to_mark=38)
 
 
