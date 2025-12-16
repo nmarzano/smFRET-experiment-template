@@ -6,6 +6,6 @@ ps.move_folders(input_folders, '.dat', rawdata_folder)
 
 # -------- Data from all data sets in the dict will be imported and concatenated into a single dataframe. Outliers wil be removed -----------
 
-output_folder = 'Experiment_2_Flucmutants/python_results'
-data = pd.read_csv('data_directory.csv')
+output_folder = 'directory_containing_csvfile/'
+data = pd.read_csv('Data_import_template.csv')
 compiled_df = ps.combine_technical_repeats(data, output_folder)
